@@ -13,12 +13,8 @@
     </div>
     <div class="col-md-6">
         <div class="form-group">
-            <label for="user_name">User Name</label>
-            <input type="text" name="user_name" id="user_name" class="form-control @error('user_name') is-invalid @enderror"
-                   value="{{ old('user_name', optional($teacher)->user_name) }}" required>
-            @error('user_name')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+            <label>User Name</label>
+            <input type="text" class="form-control" value="{{ optional($teacher)->user_name ?? 'Auto generated' }}" disabled>
         </div>
     </div>
 </div>

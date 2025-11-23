@@ -5,16 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
 {
+    private const TEACHER_ROLE = 2;
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
-            if (!Auth::user()?->isType(UserType::HeadTeacher)) {
+            $user = Auth::user();
+
+            $isHeadTeacherType = $user?->isType(UserType::HeadTeacher);
+            $hasHeadTeacherRole = $user?->roles()->where('title', 'HeadTeacher')->exists();
+
+            if (!$isHeadTeacherType && !$hasHeadTeacherRole) {
                 abort(403, 'Only head teachers can manage teachers.');
             }
 
@@ -40,16 +47,17 @@ class TeacherController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'user_name' => ['required', 'string', 'max:50', 'unique:users,user_name'],
             'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'status' => ['required', 'boolean'],
         ]);
 
-        User::create([
+        $userName = $this->generateTeacherUsername();
+
+        $user = User::create([
             'name' => $data['name'],
-            'user_name' => $data['user_name'],
+            'user_name' => $userName,
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
             'password' => Hash::make($data['password']),
@@ -58,6 +66,9 @@ class TeacherController extends Controller
             'teacher_id' => Auth::id(),
             'type' => UserType::Teacher->value,
         ]);
+
+        // Assign Teacher role to the user
+        $user->roles()->sync(self::TEACHER_ROLE);
 
         return redirect()
             ->route('admin.teachers.index')
@@ -77,7 +88,6 @@ class TeacherController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'user_name' => ['required', 'string', 'max:50', 'unique:users,user_name,'.$teacher->id],
             'phone' => ['nullable', 'string', 'max:20', 'unique:users,phone,'.$teacher->id],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$teacher->id],
             'password' => ['nullable', 'string', 'min:6', 'confirmed'],
@@ -86,7 +96,6 @@ class TeacherController extends Controller
 
         $payload = [
             'name' => $data['name'],
-            'user_name' => $data['user_name'],
             'phone' => $data['phone'] ?? null,
             'email' => $data['email'] ?? null,
             'status' => $data['status'],
@@ -113,6 +122,15 @@ class TeacherController extends Controller
         return redirect()
             ->route('admin.teachers.index')
             ->with('success', 'Teacher deleted successfully.');
+    }
+
+    private function generateTeacherUsername(): string
+    {
+        do {
+            $candidate = 'T-' . Str::upper(Str::random(5));
+        } while (User::where('user_name', $candidate)->exists());
+
+        return $candidate;
     }
 }
 
