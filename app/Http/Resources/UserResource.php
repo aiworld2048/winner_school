@@ -23,8 +23,11 @@ class UserResource extends JsonResource
                 'email' => $this->email,
                 'balance' => $this->balance,
                 'status' => $this->status,
-                'type' => $this->type,
-                'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
+                'type' => (int) $this->type,
+                'role_id' => optional($this->roles->first())->id,
+                'roles' => $this->whenLoaded('roles', function () {
+                    return $this->roles->pluck('name')->filter()->values();
+                }),
             ],
             'token' => $this->createToken($this->user_name ?? ('user-'.$this->id))->plainTextToken,
         ];
