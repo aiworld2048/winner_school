@@ -36,25 +36,18 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $credentials = is_numeric($data['user_name'])
-            ? ['phone' => $data['user_name'], 'password' => $data['password']]
-            : ['user_name' => $data['user_name'], 'password' => $data['password']];
+        $credentials = [
+            'phone' => $data['phone'],
+            'password' => $data['password'],
+        ];
 
-        if (! Auth::attempt($credentials)) {
-            return $this->error('', 'Credentials do not match!', 401);
+        if (!Auth::attempt($credentials)) {
+            return $this->error('', 'These credentials do not match our records.', 401);
         }
 
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($user->status == 0) {
-            return $this->error('', 'Your account is not activated!', 401);
-        }
-
-        if ($user->is_changed_password == 0) {
-            return $this->error($user, 'You have to change password', 200);
-        }
-
-        // Ensure roles relationship is loaded
         $user->load('roles');
 
         if ($user->roles->isEmpty() || ($user->roles[0]->id != self::PLAYER_ROLE && $user->roles[0]->id != self::TEACHER_ROLE)) {

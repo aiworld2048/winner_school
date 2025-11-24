@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\DepositRequestController;
 use App\Http\Controllers\Api\V1\Game\GSCPlusProviderController;
 use App\Http\Controllers\Api\V1\PromotionController;
 use App\Http\Controllers\Api\V1\Bank\BankController;
+use App\Http\Controllers\Api\V1\Teacher\LessonController as TeacherLessonApiController;
+use App\Http\Controllers\Api\V1\Student\LessonController as StudentLessonApiController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 
 
@@ -38,6 +40,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('withdrawfinicial', [WithDrawRequestController::class, 'FinicalWithdraw']);
     Route::get('withdrawlogfinicial', [WithDrawRequestController::class, 'log']);
 
+    Route::get('teacher/lessons', [TeacherLessonApiController::class, 'index']);
+    Route::post('teacher/lessons', [TeacherLessonApiController::class, 'store']);
+
+    Route::get('student/lessons', [StudentLessonApiController::class, 'index']);
+    Route::get('student/lessons/{lesson}', [StudentLessonApiController::class, 'show']);
+
     
 });
 
@@ -45,11 +53,6 @@ Route::get('banner_Text', [BannerController::class, 'bannerText']);
 Route::get('popup-ads-banner', [BannerController::class, 'AdsBannerIndex']);
 Route::get('banner', [BannerController::class, 'index']);
 Route::get('videoads', [BannerController::class, 'ApiVideoads']);
-
-
-
-
-
 Route::middleware(['auth:sanctum'])->group(function () {
    
     Route::post('/change-password', [AuthController::class, 'changePassword']); 

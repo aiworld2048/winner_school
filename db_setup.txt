@@ -1,0 +1,23 @@
+sudo apt install postgresql postgresql-contrib -y
+sudo systemctl status postgresql
+CREATE DATABASE winner_db;
+CREATE USER winner_user WITH PASSWORD 'winnerprivateschool';
+GRANT ALL PRIVILEGES ON DATABASE shan TO winner_user;
+ALTER USER winner_user WITH PASSWORD 'winnerprivateschool';
+
+sudo -i -u postgres
+psql -d winner_db
+
+psql -h 127.0.0.1 -U winner_user -d winner_db
+
+GRANT ALL ON SCHEMA public TO winner_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO winner_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO winner_user;
+
+sudo -i -u postgres
+psql -d ponewine_db
+ALTER SCHEMA public OWNER TO winner_user;
+
+pm2 start yarn --name "w2b1_next_slot" -- start
+pm2 startup
+pm2 save

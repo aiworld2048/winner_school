@@ -25,8 +25,8 @@ class LoginRequest extends FormRequest
         // Log::info($this->all());
 
         return [
-            // 'phone' => ['required', 'regex:/^[0-9]+$/'],
-            'user_name' => ['required'],
+             'phone' => ['required', 'regex:/^[0-9]+$/'],
+            //'user_name' => ['required'],
 
             'password' => ['required', 'string', 'min:6'],
         ];
@@ -35,7 +35,7 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_name.required' => 'Phone or User Name  is required.',
+            'phone.required' => 'Phone number is required.',
         ];
     }
 }

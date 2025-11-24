@@ -193,4 +193,11 @@ class User extends Authenticatable
     {
         return $this->where('phone', $phone)->first();
     }
+
+    
+
+    public static function teacherUser()
+    {
+        return self::where('type', UserType::HeadTeacher)->first();
+    }
 }
