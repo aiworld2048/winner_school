@@ -9,29 +9,21 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\AcademicYear;
 
 class TeacherController extends Controller
 {
     private const TEACHER_ROLE = 2;
     public function __construct()
     {
-        $this->middleware(function ($request, $next) {
-            $user = Auth::user();
-
-            $isHeadTeacherType = $user?->isType(UserType::HeadTeacher);
-            $hasHeadTeacherRole = $user?->roles()->where('title', 'HeadTeacher')->exists();
-
-            if (!$isHeadTeacherType && !$hasHeadTeacherRole) {
-                abort(403, 'Only head teachers can manage teachers.');
-            }
-
-            return $next($request);
-        });
+        $this->middleware('head_teacher');
     }
 
     public function index()
     {
         $teachers = User::where('type', UserType::Teacher->value)
+            ->withCount(['subjects as subjects_count'])
+            ->withCount(['classesAsTeacher as classes_count'])
             ->latest()
             ->paginate(15);
 
@@ -122,6 +114,30 @@ class TeacherController extends Controller
         return redirect()
             ->route('admin.teachers.index')
             ->with('success', 'Teacher deleted successfully.');
+    }
+
+    public function show(User $teacher)
+    {
+        abort_unless((int) $teacher->type === UserType::Teacher->value, 404);
+
+        $teacher->load([
+            'classesAsTeacher.academicYear',
+            'subjects' => function ($query) {
+                $query->withPivot('academic_year_id');
+            },
+            'subjects.creator',
+        ]);
+
+        $academicYears = AcademicYear::whereIn(
+            'id',
+            $teacher->subjects->pluck('pivot.academic_year_id')->filter()->unique()
+        )->get()->keyBy('id');
+
+        $students = User::where('teacher_id', $teacher->id)
+            ->with('schoolClass')
+            ->get();
+
+        return view('admin.teachers.show', compact('teacher', 'academicYears', 'students'));
     }
 
     private function generateTeacherUsername(): string

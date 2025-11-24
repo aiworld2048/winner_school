@@ -30,18 +30,12 @@ class DashboardController extends Controller
             abort(403, 'Students are not authorized to access the admin dashboard.');
         }
 
-        // HeadTeacher Dashboard
-        if ($userType === UserType::HeadTeacher) {
-            return $this->headTeacherDashboard();
-        }
-
-        // SystemWallet Dashboard
-        if ($userType === UserType::SystemWallet) {
-            return $this->systemWalletDashboard();
-        }
-
-        // Default fallback
-        abort(403, 'Unauthorized access.');
+        return match ($userType) {
+            UserType::HeadTeacher => $this->headTeacherDashboard(),
+            UserType::Teacher => $this->teacherDashboard(),
+            UserType::SystemWallet => $this->systemWalletDashboard(),
+            default => abort(403, 'Unauthorized access.'),
+        };
     }
 
     private function headTeacherDashboard()
@@ -49,7 +43,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         $totalStudents = User::where('type', UserType::Student->value)->count();
-        $totalTeachers = User::where('type', UserType::HeadTeacher->value)->count();
+        $totalTeachers = User::where('type', UserType::Teacher->value)->count();
         $totalClasses = SchoolClass::count();
         $totalSubjects = Subject::count();
         $totalAcademicYears = AcademicYear::count();
@@ -103,6 +97,41 @@ class DashboardController extends Controller
             'systemBalance',
             'walletStats',
             'recentTransactions'
+        ));
+    }
+
+    private function teacherDashboard()
+    {
+        $teacher = Auth::user();
+
+        $classes = $teacher->classesAsTeacher()
+            ->with('academicYear')
+            ->get();
+
+        $subjects = $teacher->subjects()
+            ->withPivot('academic_year_id')
+            ->orderBy('name')
+            ->get();
+
+        $subjectAcademicYears = AcademicYear::whereIn(
+            'id',
+            $subjects->pluck('pivot.academic_year_id')->filter()->unique()
+        )->get()->keyBy('id');
+
+        $studentsCount = User::where('teacher_id', $teacher->id)->count();
+        $recentStudents = User::where('teacher_id', $teacher->id)
+            ->with('schoolClass')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('admin.dashboard.teacher', compact(
+            'teacher',
+            'classes',
+            'subjects',
+            'subjectAcademicYears',
+            'studentsCount',
+            'recentStudents'
         ));
     }
 }

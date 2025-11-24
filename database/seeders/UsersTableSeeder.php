@@ -22,29 +22,35 @@ class UsersTableSeeder extends Seeder
         $owner = $this->createUser(UserType::HeadTeacher, 'Head Teacher', 'head_teacher', '09123456789');
         $walletService->deposit($owner, 10 * 100_000, TransactionName::CapitalDeposit);
 
+        
+
+        // Create Teacher under Owner
+        $teacher1 = $this->createUser(UserType::Teacher, 'Teacher One', 'T-11111', '09888888888', $owner->id);
+        $walletService->deposit($teacher1, 5 * 100_000, TransactionName::CapitalDeposit);
+
+        $teacher2 = $this->createUser(UserType::Teacher, 'Teacher Two', 'T-22222', '09877777777', $owner->id);
+        $walletService->deposit($teacher2, 5 * 100_000, TransactionName::CapitalDeposit);
+
+        // Create Students under Teacher One
+        $student_1 = $this->createUser(UserType::Student, 'Student 1', 'S-11111', '09511111111', $teacher1->id);
+        $walletService->transfer($teacher1, $student_1, 30_000, TransactionName::CreditTransfer);
+        
+        $student_2 = $this->createUser(UserType::Student, 'Student 2', 'S-22222', '09522222222', $teacher1->id);
+        $walletService->transfer($teacher1, $student_2, 30_000, TransactionName::CreditTransfer);
+        
+        $student_3 = $this->createUser(UserType::Student, 'Student 3', 'S-33333', '09533333333', $teacher1->id);
+        $walletService->transfer($teacher1, $student_3, 30_000, TransactionName::CreditTransfer);
+
+        // Create Students under Teacher Two
+        $student_4 = $this->createUser(UserType::Student, 'Student 4', 'S-44444', '09544444444', $teacher2->id);
+        $walletService->transfer($teacher2, $student_4, 30_000, TransactionName::CreditTransfer);
+        
+        $student_5 = $this->createUser(UserType::Student, 'Student 5', 'S-55555', '09555555555', $teacher2->id);
+        $walletService->transfer($teacher2, $student_5, 30_000, TransactionName::CreditTransfer);
+
         // Create SystemWallet
         $systemWallet = $this->createUser(UserType::SystemWallet, 'System Wallet', 'system', '09999999999');
         $walletService->deposit($systemWallet, 5 * 100_000, TransactionName::CapitalDeposit);
-
-        // Create Teacher under Owner
-        $teacher = $this->createUser(UserType::Teacher, 'Teacher', 'T-11111', '09888888888', $owner->id);
-        $walletService->deposit($teacher, 5 * 100_000, TransactionName::CapitalDeposit);
-
-        // Create Students under Teacher
-        $student_1 = $this->createUser(UserType::Student, 'Student 1', 'S-11111', '09511111111', $teacher->id);
-        $walletService->transfer($teacher, $student_1, 30_000, TransactionName::CreditTransfer);
-        
-        $student_2 = $this->createUser(UserType::Student, 'Student 2', 'S-22222', '09522222222', $teacher->id);
-        $walletService->transfer($teacher, $student_2, 30_000, TransactionName::CreditTransfer);
-        
-        $student_3 = $this->createUser(UserType::Student, 'Student 3', 'S-33333', '09533333333', $teacher->id);
-        $walletService->transfer($teacher, $student_3, 30_000, TransactionName::CreditTransfer);
-        
-        $student_4 = $this->createUser(UserType::Student, 'Student 4', 'S-44444', '09544444444', $teacher->id);
-        $walletService->transfer($teacher, $student_4, 30_000, TransactionName::CreditTransfer);
-        
-        $student_5 = $this->createUser(UserType::Student, 'Student 5', 'S-55555', '09555555555', $teacher->id);
-        $walletService->transfer($teacher, $student_5, 30_000, TransactionName::CreditTransfer);
     }
 
     private function createUser(UserType $type, $name, $user_name, $phone, $parent_id = null)

@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\LoginController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Teacher\StudentClassAssignmentController;
+use App\Http\Controllers\Teacher\LessonController;
 
 // Redirect root route to login
 Route::get('/', function () {
@@ -22,4 +24,13 @@ Route::post('update-password/{user}', [LoginController::class, 'updatePassword']
 
 // Include admin routes
 require_once __DIR__.'/admin.php';
+
+Route::middleware(['auth', 'teacher'])->prefix('teacher')->as('teacher.')->group(function () {
+    Route::get('students', [StudentClassAssignmentController::class, 'index'])->name('students.assign.index');
+    Route::get('students/create', [StudentClassAssignmentController::class, 'create'])->name('students.assign.create');
+    Route::post('students', [StudentClassAssignmentController::class, 'store'])->name('students.assign.store');
+    Route::put('students/{student}', [StudentClassAssignmentController::class, 'update'])->name('students.assign.update');
+
+    Route::resource('lessons', LessonController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
+});
 

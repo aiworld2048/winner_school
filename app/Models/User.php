@@ -32,6 +32,7 @@ class User extends Authenticatable
         'status',
         'is_changed_password',
         'teacher_id',
+        'class_id',
         'payment_type_id',
         'account_name',
         'account_number',

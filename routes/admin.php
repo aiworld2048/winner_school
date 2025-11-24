@@ -1,16 +1,20 @@
 <?php
 
+use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\AdsVedioController;
-
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\BannerAdsController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\BannerTextController;
+use App\Http\Controllers\Admin\ClassTeacherController;
+use App\Http\Controllers\Admin\SchoolClassController;
 use App\Http\Controllers\Admin\ContactController;
 use App\Http\Controllers\Admin\DepositRequestController;
 use App\Http\Controllers\Admin\PaymentTypeController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\Admin\TeacherSubjectController;
 use App\Http\Controllers\Admin\TransferLogController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +41,14 @@ Route::group([
     Route::resource('paymentTypes', PaymentTypeController::class);
 
     // ==================== Teacher Management ====================
-    Route::resource('teachers', TeacherController::class)->except(['show']);
+    Route::resource('teachers', TeacherController::class);
+    Route::resource('academic-years', AcademicYearController::class)->except(['show']);
+    Route::resource('subjects', SubjectController::class)->except(['show']);
+    Route::resource('school-classes', SchoolClassController::class)->except(['show']);
+    Route::get('school-classes/{schoolClass}/teacher', [ClassTeacherController::class, 'edit'])->name('school-classes.teacher.edit');
+    Route::put('school-classes/{schoolClass}/teacher', [ClassTeacherController::class, 'update'])->name('school-classes.teacher.update');
+    Route::get('teachers/{teacher}/subjects', [TeacherSubjectController::class, 'create'])->name('teachers.subjects.create');
+    Route::post('teachers/{teacher}/subjects', [TeacherSubjectController::class, 'store'])->name('teachers.subjects.store');
 
    
 

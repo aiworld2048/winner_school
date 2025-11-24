@@ -210,11 +210,52 @@
 
                         @if($userType === \App\Enums\UserType::HeadTeacher)
                             <li class="nav-header">Staff Management</li>
-                            <li class="nav-item">
+                                    <li class="nav-item">
                                 <a href="{{ route('admin.teachers.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.teachers.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-chalkboard-teacher"></i>
                                     <p>Teachers</p>
+                                        </a>
+                            </li>
+
+                            <li class="nav-header">Academic Management</li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.academic-years.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.academic-years.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-calendar-alt"></i>
+                                    <p>Academic Years</p>
+                                </a>
+                            </li>
+                                    <li class="nav-item">
+                                <a href="{{ route('admin.school-classes.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.school-classes.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-school"></i>
+                                    <p>Classes</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                <a href="{{ route('admin.subjects.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>Subjects</p>
+                                        </a>
+                            </li>
+                        @endif
+
+                        @if($userType === \App\Enums\UserType::Teacher)
+                            <li class="nav-header">My Classroom</li>
+                            <li class="nav-item">
+                                <a href="{{ route('teacher.students.assign.index') }}"
+                                   class="nav-link {{ request()->routeIs('teacher.students.assign.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-users"></i>
+                                    <p>My Students</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('teacher.lessons.index') }}"
+                                   class="nav-link {{ request()->routeIs('teacher.lessons.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>My Lessons</p>
                                 </a>
                             </li>
                         @endif
@@ -226,51 +267,51 @@
                                    class="nav-link {{ request()->routeIs('admin.banks.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-university"></i>
                                     <p>Banks</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                 <a href="{{ route('admin.paymentTypes.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.paymentTypes.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-credit-card"></i>
                                     <p>Payment Types</p>
-                                </a>
+                                        </a>
                             </li>
 
                             <li class="nav-header">Content & Promotions</li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.video-upload.index') }}"
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.video-upload.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.video-upload.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-video"></i>
-                                    <p>Ads Video</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.text.index') }}"
+                                            <p>Ads Video</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.text.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.text.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-heading"></i>
-                                    <p>Banner Text</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.banners.index') }}"
+                                            <p>Banner Text</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.banners.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-image"></i>
                                     <p>Banners</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.adsbanners.index') }}"
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.adsbanners.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.adsbanners.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-ad"></i>
-                                    <p>Banner Ads</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.promotions.index') }}"
+                                            <p>Banner Ads</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{ route('admin.promotions.index') }}"
                                    class="nav-link {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-bullhorn"></i>
-                                    <p>Promotions</p>
-                                </a>
+                                            <p>Promotions</p>
+                                        </a>
                             </li>
 
                             <li class="nav-header">Communication</li>
@@ -281,13 +322,13 @@
                                     <p>Contact Management</p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.contact.index') }}"
-                                   class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
-                                    <i class="nav-icon fas fa-phone"></i>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.contact.index') }}"
+                                       class="nav-link {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
+                                        <i class="nav-icon fas fa-phone"></i>
                                     <p>Student Contact</p>
-                                </a>
-                            </li>
+                                    </a>
+                                </li>
                         @endif
                     </ul>
                 </nav>
@@ -318,6 +359,7 @@
     <script>
         // $.widget.bridge('uibutton', $.ui.button)
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('plugins/bootstrap/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>

@@ -66,5 +66,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'checkBanned' => \App\Http\Middleware\CheckBanned::class,
         'preventPlayerAccess' => \App\Http\Middleware\PreventPlayerAccess::class,
+        'head_teacher' => \App\Http\Middleware\EnsureHeadTeacher::class,
+        'teacher' => \App\Http\Middleware\EnsureTeacher::class,
     ];
 }

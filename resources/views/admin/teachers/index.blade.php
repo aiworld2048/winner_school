@@ -22,7 +22,8 @@
                                 <th>User Name</th>
                                 <th>Name</th>
                                 <th>Phone</th>
-                                <th>Email</th>
+                                <th>Classes</th>
+                                <th>Subjects</th>
                                 <th>Status</th>
                                 <th class="text-right">Actions</th>
                             </tr>
@@ -34,15 +35,22 @@
                                     <td>{{ $teacher->user_name }}</td>
                                     <td>{{ $teacher->name }}</td>
                                     <td>{{ $teacher->phone ?? '-' }}</td>
-                                    <td>{{ $teacher->email ?? '-' }}</td>
+                                    <td>{{ $teacher->classes_count }}</td>
+                                    <td>{{ $teacher->subjects_count }}</td>
                                     <td>
                                         <span class="badge {{ $teacher->status ? 'badge-success' : 'badge-secondary' }}">
                                             {{ $teacher->status ? 'Active' : 'Inactive' }}
                                         </span>
                                     </td>
                                     <td class="text-right">
+                                        <a href="{{ route('admin.teachers.show', $teacher) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="{{ route('admin.teachers.edit', $teacher) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ route('admin.teachers.subjects.create', $teacher) }}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-book-open"></i>
                                         </a>
                                         <form action="{{ route('admin.teachers.destroy', $teacher) }}" method="POST" class="d-inline"
                                               onsubmit="return confirm('Are you sure you want to delete this teacher?');">
