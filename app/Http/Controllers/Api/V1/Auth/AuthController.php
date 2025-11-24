@@ -30,7 +30,7 @@ class AuthController extends Controller
 
     private const TEACHER_ROLE = 2;
 
-    private const PLAYER_ROLE = 3;
+    private const STUDENT_ROLE = 3;
 
     public function login(LoginRequest $request)
     {
@@ -50,7 +50,7 @@ class AuthController extends Controller
 
         $user->load('roles');
 
-        if ($user->roles->isEmpty() || ($user->roles[0]->id != self::PLAYER_ROLE && $user->roles[0]->id != self::TEACHER_ROLE)) {
+        if ($user->roles->isEmpty() || ($user->roles[0]->id != self::STUDENT_ROLE && $user->roles[0]->id != self::TEACHER_ROLE)) {
             return $this->error('', 'You do not have permissions', 200);
         }
 
@@ -83,10 +83,10 @@ class AuthController extends Controller
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
             'agent_id' => $agent->id,
-            'type' => UserType::Player,
+            'type' => UserType::Student,
         ]);
 
-        $user->roles()->sync(self::PLAYER_ROLE);
+        $user->roles()->sync(self::STUDENT_ROLE);
 
         // $this->cashIn($agent,$user);
 
