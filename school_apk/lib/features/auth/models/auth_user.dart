@@ -21,7 +21,7 @@ class AuthUser {
           : (json['user_name'] as String? ?? ''),
       phone: json['phone']?.toString() ?? '',
       role: parseUserRole(json['type']),
-      balance: (json['balance'] as num?)?.toDouble() ?? 0,
+      balance: _parseBalance(json['balance']),
     );
   }
 }
@@ -41,5 +41,11 @@ UserRole parseUserRole(dynamic value) {
     default:
       return UserRole.unknown;
   }
+}
+
+double _parseBalance(dynamic raw) {
+  if (raw is num) return raw.toDouble();
+  if (raw is String) return double.tryParse(raw) ?? 0;
+  return 0;
 }
 

@@ -22,6 +22,7 @@ class PlayerResource extends JsonResource
             'email' => $this->email,
             'balance' => $this->balance,
             'status' => $this->status,
+            'type' => $this->type,
         ];
     }
 }

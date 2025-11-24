@@ -3,7 +3,7 @@ class ApiConstants {
 
   static const String baseOrigin =
       String.fromEnvironment('API_ORIGIN', defaultValue: 'https://lion11.site');
-  static const String baseUrl = '$baseOrigin/api';
+  static const String baseUrl = '$baseOrigin/api/';
 
   static String url(String path) => '$baseUrl/$path';
 }

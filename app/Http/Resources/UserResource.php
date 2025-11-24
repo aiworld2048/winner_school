@@ -14,19 +14,19 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $user = [
-            'id' => $this->id,
-            'name' => $this->name,
-            'user_name' => $this->user_name,
-            'phone' => $this->phone,
-            'email' => $this->email,
-            'balance' => $this->balance,
-            'status' => $this->status,
-        ];
-
         return [
-            'user' => $user,
-            'token' => $this->createToken($this->user_name)->plainTextToken,
+            'user' => [
+                'id' => $this->id,
+                'name' => $this->name,
+                'user_name' => $this->user_name,
+                'phone' => $this->phone,
+                'email' => $this->email,
+                'balance' => $this->balance,
+                'status' => $this->status,
+                'type' => $this->type,
+                'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
+            ],
+            'token' => $this->createToken($this->user_name ?? ('user-'.$this->id))->plainTextToken,
         ];
     }
 }

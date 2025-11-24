@@ -18,10 +18,7 @@ class ApiClient {
       final response = await _dio.get(path, queryParameters: queryParameters);
       return response.data;
     } on DioException catch (error) {
-      throw ApiException(
-        error.response?.data?['message']?.toString() ?? error.message ?? 'Unknown error',
-        statusCode: error.response?.statusCode,
-      );
+      throw _mapDioError(error);
     }
   }
 
@@ -38,10 +35,25 @@ class ApiClient {
       );
       return response.data;
     } on DioException catch (error) {
-      throw ApiException(
-        error.response?.data?['message']?.toString() ?? error.message ?? 'Unknown error',
-        statusCode: error.response?.statusCode,
-      );
+      throw _mapDioError(error);
+    }
+  }
+
+  ApiException _mapDioError(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return const ApiException(
+          'Unable to reach the server. Please check your internet connection or try again shortly.',
+        );
+      case DioExceptionType.badResponse:
+        return ApiException(
+          error.response?.data?['message']?.toString() ?? 'Server responded with an error.',
+          statusCode: error.response?.statusCode,
+        );
+      default:
+        return ApiException(error.message ?? 'Unexpected network error.', statusCode: error.response?.statusCode);
     }
   }
 }
@@ -51,8 +63,8 @@ final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 20),
+      connectTimeout: const Duration(seconds: 45),
+      receiveTimeout: const Duration(seconds: 45),
       headers: const {'Accept': 'application/json'},
     ),
   );
