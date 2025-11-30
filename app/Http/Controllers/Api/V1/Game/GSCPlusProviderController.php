@@ -89,8 +89,8 @@ class GSCPlusProviderController extends Controller
 
     public function banks()
     {
-        $player = Auth::user();
-        $data = Bank::where('agent_id', $player->agent_id)->get();
+        $student = Auth::user();
+        $data = Bank::where('agent_id', $student->teacher_id)->get();
 
         return $this->success(BankResource::collection($data), 'Payment Type list successfule');
     }
