@@ -8,6 +8,7 @@ use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\User;
+use App\Models\AcademicYear;
 use App\Traits\HttpResponses;
 use Illuminate\Http\JsonResponse;
 
@@ -54,6 +55,19 @@ class PublicHighlightsController extends Controller
             ])
             ->values();
 
+        $academicYears = AcademicYear::select('id', 'name', 'code', 'start_date', 'end_date')
+            ->orderByDesc('start_date')
+            ->take(5)
+            ->get()
+            ->map(fn ($year) => [
+                'id' => $year->id,
+                'name' => $year->name,
+                'code' => $year->code,
+                'start_date' => optional($year->start_date)->toDateString(),
+                'end_date' => optional($year->end_date)->toDateString(),
+            ])
+            ->values();
+
         $studentCount = User::where('type', UserType::Student->value)->count();
         $teacherCount = User::where('type', UserType::Teacher->value)->count();
         $lessonCount = Lesson::count();
@@ -69,6 +83,7 @@ class PublicHighlightsController extends Controller
             'courses' => $courses,
             'lessons' => $lessons,
             'classes' => $classes,
+            'academic_years' => $academicYears,
         ], 'Highlights retrieved.');
     }
 }

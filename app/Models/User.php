@@ -37,6 +37,9 @@ class User extends Authenticatable
         'account_name',
         'account_number',
         'type',
+        'subject_id',
+        'academic_year_id',
+        'referral_code',
     ];
 
     /**
@@ -62,6 +65,10 @@ class User extends Authenticatable
             'status' => 'boolean',
             'is_changed_password' => 'boolean',
             'type' => 'integer',
+            'class_id' => 'integer',
+            'subject_id' => 'integer',
+            'academic_year_id' => 'integer',
+            'referral_code' => 'string',
         ];
     }
 
@@ -145,6 +152,22 @@ class User extends Authenticatable
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    /**
+     * Get the subject assigned to this student (if any).
+     */
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
+    }
+
+    /**
+     * Get the academic year associated with this student.
+     */
+    public function academicYear(): BelongsTo
+    {
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
     }
 
     /**

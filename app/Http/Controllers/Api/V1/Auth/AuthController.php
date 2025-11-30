@@ -66,10 +66,10 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $agent = User::where('referral_code', 'ponewine22x')->first();
+        $teacher = User::where('referral_code', 'ponewine22x')->first();
 
-        if (! $agent) {
-            return $this->error('', 'Not Found Agent', 401);
+        if (! $teacher) {
+            return $this->error('', 'Not Found Teacher', 401);
         }
 
         $inputs = $request->validated();
@@ -82,8 +82,11 @@ class AuthController extends Controller
             'payment_type_id' => $request->payment_type_id,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,
-            'agent_id' => $agent->id,
+            'teacher_id' => $teacher->id,
             'type' => UserType::Student,
+            'class_id' => $request->class_id,
+            'subject_id' => $request->subject_id,
+            'academic_year_id' => $request->academic_year_id,
         ]);
 
         $user->roles()->sync(self::STUDENT_ROLE);
