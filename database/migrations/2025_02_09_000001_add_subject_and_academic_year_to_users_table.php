@@ -13,19 +13,31 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (!Schema::hasColumn('users', 'subject_id')) {
-                $table->foreignId('subject_id')
-                    ->nullable()
-                    ->after('class_id')
-                    ->constrained('subjects')
-                    ->nullOnDelete();
+                if (Schema::hasTable('subjects')) {
+                    $table->foreignId('subject_id')
+                        ->nullable()
+                        ->after('class_id')
+                        ->constrained('subjects')
+                        ->nullOnDelete();
+                } else {
+                    $table->unsignedBigInteger('subject_id')
+                        ->nullable()
+                        ->after('class_id');
+                }
             }
 
             if (!Schema::hasColumn('users', 'academic_year_id')) {
-                $table->foreignId('academic_year_id')
-                    ->nullable()
-                    ->after('subject_id')
-                    ->constrained('academic_years')
-                    ->nullOnDelete();
+                if (Schema::hasTable('academic_years')) {
+                    $table->foreignId('academic_year_id')
+                        ->nullable()
+                        ->after('subject_id')
+                        ->constrained('academic_years')
+                        ->nullOnDelete();
+                } else {
+                    $table->unsignedBigInteger('academic_year_id')
+                        ->nullable()
+                        ->after('subject_id');
+                }
             }
         });
     }
@@ -37,12 +49,16 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             if (Schema::hasColumn('users', 'academic_year_id')) {
-                $table->dropForeign(['academic_year_id']);
+                if (Schema::hasTable('academic_years')) {
+                    $table->dropForeign(['academic_year_id']);
+                }
                 $table->dropColumn('academic_year_id');
             }
 
             if (Schema::hasColumn('users', 'subject_id')) {
-                $table->dropForeign(['subject_id']);
+                if (Schema::hasTable('subjects')) {
+                    $table->dropForeign(['subject_id']);
+                }
                 $table->dropColumn('subject_id');
             }
         });
