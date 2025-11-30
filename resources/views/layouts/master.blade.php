@@ -247,6 +247,26 @@
                                     <p>Dictionary</p>
                                         </a>
                             </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('admin.agent.withdraw') }}"
+                                    class="nav-link {{ Route::currentRouteName() == 'admin.agent.withdraw' ? 'active' : '' }}">
+                                    <i class="fas fa-comment-dollar"></i>
+                                    <p>
+                                        Withdraw Request
+                                    </p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="{{ route('admin.agent.deposit') }}"
+                                    class="nav-link {{ Route::currentRouteName() == 'admin.agent.deposit' ? 'active' : '' }}">
+                                    <i class="fab fa-dochub"></i>
+                                    <p>
+                                        Deposit Request
+                                    </p>
+                                </a>
+                            </li>
                         @endif
 
                         @if($userType === \App\Enums\UserType::Teacher)

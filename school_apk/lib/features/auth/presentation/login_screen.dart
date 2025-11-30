@@ -18,10 +18,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
   bool _modalVisible = false;
 
   @override
@@ -33,21 +29,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _showLoginModal(context, highlightData);
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    await ref.read(authControllerProvider.notifier).login(
-          _phoneController.text.trim(),
-          _passwordController.text,
-        );
   }
 
   @override
@@ -124,13 +105,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Consumer(
             builder: (context, ref, _) {
-              final authState = ref.watch(authControllerProvider);
-              final theme = Theme.of(context);
               final snapshot = ref.watch(publicHighlightsProvider);
               final data = highlightData ?? snapshot.valueOrNull;
               return ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: _buildLoginForm(dialogContext, theme, authState, ref, data),
+                child: _LoginDialogContent(
+                  highlightData: data,
+                  onClose: () => Navigator.of(dialogContext).pop(),
+                ),
               );
             },
           ),
@@ -146,19 +128,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Widget _buildLoginForm(
-    BuildContext dialogContext,
-    ThemeData theme,
-    AsyncValue authState,
-    WidgetRef ref,
-    PublicHighlights? highlights,
-  ) {
+}
+
+class _LoginDialogContent extends ConsumerStatefulWidget {
+  const _LoginDialogContent({
+    required this.onClose,
+    this.highlightData,
+  });
+
+  final VoidCallback onClose;
+  final PublicHighlights? highlightData;
+
+  @override
+  ConsumerState<_LoginDialogContent> createState() => _LoginDialogContentState();
+}
+
+class _LoginDialogContentState extends ConsumerState<_LoginDialogContent> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    await ref.read(authControllerProvider.notifier).login(
+          _phoneController.text.trim(),
+          _passwordController.text,
+        );
+    if (mounted) {
+      widget.onClose();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final authState = ref.watch(authControllerProvider);
+
     return FrostedGlassCard(
       child: AutofillGroup(
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
@@ -167,7 +187,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   IconButton(
                     tooltip: 'Close',
                     icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    onPressed: widget.onClose,
                   ),
                 ],
               ),
@@ -229,8 +249,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: authState.isLoading
                     ? null
                     : () {
-                        Navigator.of(dialogContext).pop();
-                        Navigator.of(dialogContext).push(
+                        widget.onClose();
+                        Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const RegisterScreen()),
                         );
                       },

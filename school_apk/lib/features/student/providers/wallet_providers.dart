@@ -17,3 +17,18 @@ final walletBalanceProvider = StateProvider<double>((ref) {
   return raw is num ? raw.toDouble() : double.tryParse(raw?.toString() ?? '') ?? 0;
 });
 
+final banksProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final repo = ref.watch(walletRepositoryProvider);
+  return repo.fetchBanks();
+});
+
+final paymentTypesProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final repo = ref.watch(walletRepositoryProvider);
+  return repo.fetchPaymentTypes();
+});
+
+final agentPaymentTypesProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final repo = ref.watch(walletRepositoryProvider);
+  return repo.fetchAgentPaymentTypes();
+});
+

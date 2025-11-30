@@ -66,4 +66,22 @@ Route::group([
 
     // ==================== Dictionary ====================
     Route::resource('dictionary', DictionaryEntryController::class)->except(['show']);
+
+    // ==================== Deposit Management ====================
+    Route::middleware(['permission:agent_wallet_deposit'])->group(function () {
+        Route::get('finicialdeposit', [DepositRequestController::class, 'index'])->name('agent.deposit');
+        Route::get('finicialdeposit/{deposit}', [DepositRequestController::class, 'view'])->name('agent.depositView');
+        Route::post('finicialdeposit/{deposit}', [DepositRequestController::class, 'statusChangeIndex'])->name('agent.depositStatusUpdate');
+        Route::post('finicialdeposit/reject/{deposit}', [DepositRequestController::class, 'statusChangeReject'])->name('agent.depositStatusreject');
+        Route::get('finicialdeposit/{deposit}/log', [DepositRequestController::class, 'DepositShowLog'])->name('agent.depositLog');
+    });
+
+    // ==================== Withdraw Management ====================
+    Route::middleware(['permission:agent_wallet_withdraw'])->group(function () {
+        Route::get('finicialwithdraw', [WithDrawRequestController::class, 'index'])->name('agent.withdraw');
+        Route::post('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'statusChangeIndex'])->name('agent.withdrawStatusUpdate');
+        Route::post('finicialwithdraw/reject/{withdraw}', [WithDrawRequestController::class, 'statusChangeReject'])->name('agent.withdrawStatusreject');
+        Route::get('finicialwithdraw/{withdraw}', [WithDrawRequestController::class, 'WithdrawShowLog'])->name('agent.withdrawLog');
+    });
+
 });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html_table/flutter_html_table.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
 import '../../providers/lesson_providers.dart';
@@ -61,7 +62,7 @@ class StudentLessonDetailScreen extends ConsumerWidget {
                   elevation: 0,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Html(data: data.content),
+                    child: _LessonContentHtml(html: data.content!),
                   ),
                 )
               else
@@ -75,6 +76,67 @@ class StudentLessonDetailScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class _LessonContentHtml extends StatefulWidget {
+  const _LessonContentHtml({required this.html});
+
+  final String html;
+
+  @override
+  State<_LessonContentHtml> createState() => _LessonContentHtmlState();
+}
+
+class _LessonContentHtmlState extends State<_LessonContentHtml> {
+  late String _html;
+
+  @override
+  void initState() {
+    super.initState();
+    _html = widget.html;
+    _tweakHtml();
+  }
+
+  @override
+  void didUpdateWidget(covariant _LessonContentHtml oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.html != widget.html) {
+      _html = widget.html;
+      _tweakHtml();
+    }
+  }
+
+  void _tweakHtml() {
+    setState(() {
+      _html = widget.html.replaceAll(r'\text{', '').replaceAll('}', '');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Html(
+      data: _html,
+      extensions: const [
+        TableHtmlExtension(),
+      ],
+      style: {
+        'table': Style(
+          backgroundColor: Colors.white,
+          border: const Border.fromBorderSide(BorderSide(color: Colors.black12)),
+        ),
+        'th': Style(
+          padding: HtmlPaddings.all(8),
+          fontWeight: FontWeight.w600,
+          backgroundColor: Colors.grey.shade200,
+          border: const Border(bottom: BorderSide(color: Colors.black12)),
+        ),
+        'td': Style(
+          padding: HtmlPaddings.all(8),
+          border: const Border(bottom: BorderSide(color: Colors.black12)),
+        ),
+      },
     );
   }
 }
