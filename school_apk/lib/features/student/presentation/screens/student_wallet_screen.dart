@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../common/widgets/async_value_widget.dart';
 import '../../../../common/widgets/empty_state.dart';
 import '../../../../core/providers/session_provider.dart';
+import '../../../auth/providers/auth_controller.dart';
 import '../../providers/wallet_providers.dart';
 
 class StudentWalletScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     if (amount == null || amount <= 0) return;
     final repo = ref.read(walletRepositoryProvider);
     await repo.deposit(amount);
+    await ref.read(authControllerProvider.notifier).refreshUser();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deposit submitted')));
     _depositController.clear();
@@ -39,6 +41,7 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     if (amount == null || amount <= 0) return;
     final repo = ref.read(walletRepositoryProvider);
     await repo.withdraw(amount);
+    await ref.read(authControllerProvider.notifier).refreshUser();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Withdraw submitted')));
     _withdrawController.clear();

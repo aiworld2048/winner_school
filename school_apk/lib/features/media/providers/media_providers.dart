@@ -19,6 +19,11 @@ final mediaPromotionsProvider = FutureProvider.autoDispose<List<PromotionItem>>(
   return repo.fetchPromotions();
 });
 
+final mediaBannerTextsProvider = FutureProvider.autoDispose<List<String>>((ref) async {
+  final repo = ref.watch(mediaRepositoryProvider);
+  return repo.fetchBannerTexts();
+});
+
 final mediaContactsProvider = FutureProvider.autoDispose<List<ContactInfo>>((ref) async {
   final repo = ref.watch(mediaRepositoryProvider);
   return repo.fetchContacts();

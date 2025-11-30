@@ -58,5 +58,21 @@ class AuthController extends StateNotifier<AsyncValue<AuthUser?>> {
     await _repository.logout();
     state = const AsyncData(null);
   }
+
+  Future<void> refreshUser() async {
+    final current = state.valueOrNull;
+    final user = await _repository.currentUser();
+    if (user != null) {
+      state = AsyncData(user);
+    } else if (current == null) {
+      state = const AsyncData(null);
+    }
+  }
+
+  void updateBalance(double balance) {
+    final current = state.valueOrNull;
+    if (current == null) return;
+    state = AsyncData(current.copyWith(balance: balance));
+  }
 }
 

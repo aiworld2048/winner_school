@@ -2,6 +2,7 @@ class AuthUser {
   const AuthUser({
     required this.id,
     required this.name,
+    required this.userName,
     required this.phone,
     required this.role,
     required this.balance,
@@ -9,6 +10,7 @@ class AuthUser {
 
   final int id;
   final String name;
+  final String userName;
   final String phone;
   final UserRole role;
   final double balance;
@@ -19,9 +21,27 @@ class AuthUser {
       name: (json['name'] as String?)?.trim().isNotEmpty == true
           ? json['name'] as String
           : (json['user_name'] as String? ?? ''),
+      userName: json['user_name']?.toString() ?? '',
       phone: json['phone']?.toString() ?? '',
       role: parseUserRole(json['type']),
       balance: _parseBalance(json['balance']),
+    );
+  }
+
+  AuthUser copyWith({
+    String? name,
+    String? userName,
+    String? phone,
+    UserRole? role,
+    double? balance,
+  }) {
+    return AuthUser(
+      id: id,
+      name: name ?? this.name,
+      userName: userName ?? this.userName,
+      phone: phone ?? this.phone,
+      role: role ?? this.role,
+      balance: balance ?? this.balance,
     );
   }
 }

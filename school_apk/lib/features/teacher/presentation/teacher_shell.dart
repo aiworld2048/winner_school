@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../media/presentation/media_hub_screen.dart';
+import '../../shared/widgets/app_navbar.dart';
 import '../providers/teacher_providers.dart';
 import 'screens/teacher_dashboard_screen.dart';
 import 'screens/teacher_lessons_screen.dart';
-import 'screens/teacher_students_screen.dart';
 import 'screens/teacher_profile_screen.dart';
+import 'screens/teacher_students_screen.dart';
 import 'widgets/teacher_lesson_form_sheet.dart';
 import 'widgets/teacher_student_form_sheet.dart';
 
@@ -31,8 +32,8 @@ class _TeacherShellState extends ConsumerState<TeacherShell> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(titles[_index]),
+      appBar: AppNavbar(
+        title: titles[_index],
         actions: [
           IconButton(
             icon: const Icon(Icons.campaign_outlined),

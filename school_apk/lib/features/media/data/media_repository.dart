@@ -19,6 +19,22 @@ class MediaRepository {
     return items.map((e) => PromotionItem.fromJson(e)).toList();
   }
 
+  Future<List<String>> fetchBannerTexts() async {
+    final response = await _apiClient.get('banner_Text');
+    final list = _extractList(response);
+    if (list.isNotEmpty) {
+      return list
+          .map((item) => (item['title'] ?? item['text'] ?? item['message'] ?? '').toString())
+          .where((text) => text.trim().isNotEmpty)
+          .toList();
+    }
+    if (response is Map<String, dynamic>) {
+      final data = response['data'];
+      if (data is String && data.isNotEmpty) return [data];
+    }
+    return const [];
+  }
+
   Future<List<ContactInfo>> fetchContacts() async {
     final response = await _apiClient.get('contact');
     final items = _extractList(response);
