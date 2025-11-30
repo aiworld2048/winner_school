@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
@@ -23,9 +24,8 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
   final _withdrawAccountNumberController = TextEditingController();
   final _withdrawPasswordController = TextEditingController();
 
-  int? _selectedAgentPaymentTypeId;
+  Map<String, dynamic>? _selectedDepositBank;
   int? _selectedPaymentTypeId;
-  int? _selectedBankId;
   bool _depositing = false;
   bool _withdrawing = false;
   bool _withdrawPasswordVisible = false;
@@ -44,8 +44,10 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
   Future<void> _handleDeposit() async {
     final amount = double.tryParse(_depositAmountController.text);
     final reference = _depositReferenceController.text.trim();
-    final typeId = _selectedAgentPaymentTypeId;
-    if (typeId == null) return _showError('Please select a payment method.');
+    final bank = _selectedDepositBank;
+    if (bank == null) return _showError('Please choose a bank.');
+    final bankId = bank['id'] as int?;
+    if (bankId == null) return _showError('Invalid bank information.');
     if (amount == null || amount < 1000) {
       return _showError('Enter a valid amount (minimum 1000 MMK).');
     }
@@ -56,7 +58,7 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     try {
       final repo = ref.read(walletRepositoryProvider);
       await repo.submitDeposit(
-        agentPaymentTypeId: typeId,
+        agentPaymentTypeId: bankId,
         amount: amount,
         referenceNo: reference,
       );
@@ -203,157 +205,60 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
   }
 
   Widget _buildDepositCard(WidgetRef ref) {
-    final agentTypes = ref.watch(agentPaymentTypesProvider);
-    final paymentTypes = ref.watch(paymentTypesProvider);
-    final banks = ref.watch(banksProvider);
+    final depositBanks = ref.watch(banksProvider);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Deposit', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
-            AsyncValueWidget(
-              value: paymentTypes,
-              builder: (types) {
-                if (types.isEmpty) {
-                  return const Text('No payment types available.');
-                }
-                if (_selectedPaymentTypeId == null) {
-                  _selectedPaymentTypeId = types.first['id'] as int;
-                }
-                return DropdownButtonFormField<int>(
-                  value: _selectedPaymentTypeId,
-                  decoration: const InputDecoration(labelText: 'Payment type'),
-                  items: types
-                      .map(
-                        (item) => DropdownMenuItem(
-                          value: item['id'] as int,
-                          child: Text(item['name']?.toString() ?? 'Payment'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPaymentTypeId = value;
-                      _selectedAgentPaymentTypeId = null;
-                      _selectedBankId = null;
-                    });
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            AsyncValueWidget(
-              value: banks,
-              builder: (items) {
-                if (items.isEmpty || _selectedPaymentTypeId == null) {
-                  return const Text('No banks available for this type.');
-                }
-                final filtered = items
-                    .where(
-                      (item) =>
-                          item['bank_id']?.toString() == _selectedPaymentTypeId.toString(),
-                    )
-                    .toList();
-                if (filtered.isEmpty) {
-                  return const Text('No banks available for this type.');
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        child: AsyncValueWidget(
+          value: depositBanks,
+          builder: (banks) {
+            if (banks.isEmpty) {
+              return const Text('No banks available for deposit.');
+            }
+            final castBanks = banks.cast<Map<String, dynamic>>();
+            _ensureDepositBankSelected(castBanks);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    DropdownButtonFormField<int>(
-                      value: _selectedBankId,
-                      decoration: const InputDecoration(labelText: 'Bank / wallet'),
-                      items: filtered
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item['id'] as int,
-                              child: Text('${item['bank_name']} • ${item['no']}'),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedBankId = value),
+                    Text('Deposit', style: Theme.of(context).textTheme.titleMedium),
+                    const Spacer(),
+                    FilledButton.tonal(
+                      onPressed: () => _selectBank(castBanks),
+                      child: const Text('Choose Bank'),
                     ),
-                    if (_selectedBankId != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          'Account name: ${_findBankName(filtered, _selectedBankId!)}',
-                          style: const TextStyle(color: AppColors.muted),
-                        ),
-                      ),
                   ],
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            AsyncValueWidget(
-              value: agentTypes,
-              builder: (types) {
-                if (types.isEmpty || _selectedPaymentTypeId == null) {
-                  return const Text('No payment channels available.');
-                }
-                final filtered = types
-                    .where(
-                      (item) =>
-                          item['payment_type_id']?.toString() ==
-                          _selectedPaymentTypeId.toString(),
-                    )
-                    .toList();
-                if (filtered.isEmpty) {
-                  return const Text('No payment channels available.');
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DropdownButtonFormField<int>(
-                      value: _selectedAgentPaymentTypeId,
-                      decoration: const InputDecoration(labelText: 'Payment channel'),
-                      items: filtered
-                          .map(
-                            (item) => DropdownMenuItem(
-                              value: item['id'] as int,
-                              child: Text('${item['payment_type']} • ${item['account_number']}'),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) => setState(() => _selectedAgentPaymentTypeId = value),
-                    ),
-                    if (_selectedAgentPaymentTypeId != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          'Account name: ${_findAccountName(filtered, _selectedAgentPaymentTypeId!)}',
-                          style: const TextStyle(color: AppColors.muted),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _depositAmountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Amount (MMK)'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _depositReferenceController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Reference no.'),
-              maxLength: 6,
-            ),
-            const SizedBox(height: 8),
-            FilledButton(
-              onPressed: _depositing ? null : _handleDeposit,
-              child: _depositing
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Submit deposit request'),
-            ),
-          ],
+                ),
+                const SizedBox(height: 12),
+                if (_selectedDepositBank != null)
+                  _BankCard(
+                    bank: _selectedDepositBank!,
+                    onCopy: () => _copyBankNo(_selectedDepositBank!),
+                  ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _depositAmountController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Amount (MMK)'),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _depositReferenceController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Receipt reference (last 6 digits)'),
+                  maxLength: 6,
+                ),
+                const SizedBox(height: 8),
+                FilledButton(
+                  onPressed: _depositing ? null : _handleDeposit,
+                  child: _depositing
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Submit deposit request'),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -440,15 +345,101 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     return (match['account_name']?.toString() ?? '').isEmpty ? '—' : match['account_name'].toString();
   }
 
-  String _findBankName(List<dynamic> banks, int id) {
-    final match = banks.cast<Map<String, dynamic>>().firstWhere(
-          (element) => element['id'] == id,
-          orElse: () => const {},
-        );
-    return [
-      match['name']?.toString(),
-      match['bank_name']?.toString(),
-    ].whereType<String>().where((value) => value.trim().isNotEmpty).join(' • ');
+  void _ensureDepositBankSelected(List<Map<String, dynamic>> banks) {
+    if (_selectedDepositBank == null && banks.isNotEmpty) {
+      _selectedDepositBank = banks.first;
+    }
+  }
+
+  Future<void> _selectBank(List<Map<String, dynamic>> banks) async {
+    final selected = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (_, index) {
+          final bank = banks[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(bank['img']?.toString() ?? ''),
+              backgroundColor: AppColors.surfaceVariant,
+            ),
+            title: Text(bank['bank_name']?.toString() ?? ''),
+            subtitle: Text(bank['no']?.toString() ?? ''),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).pop(bank),
+          );
+        },
+        separatorBuilder: (_, __) => const Divider(),
+        itemCount: banks.length,
+      ),
+    );
+
+    if (selected != null && mounted) {
+      setState(() {
+        _selectedDepositBank = selected;
+      });
+    }
+  }
+
+  void _copyBankNo(Map<String, dynamic> bank) {
+    final number = bank['no']?.toString() ?? '';
+    if (number.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: number));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Copied account number')),
+    );
+  }
+}
+
+class _BankCard extends StatelessWidget {
+  const _BankCard({required this.bank, required this.onCopy});
+
+  final Map<String, dynamic> bank;
+  final VoidCallback onCopy;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bankName = bank['bank_name']?.toString() ?? '';
+    final holder = bank['name']?.toString() ?? '';
+    final account = bank['no']?.toString() ?? '';
+    final image = bank['img']?.toString();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surfaceVariant,
+      ),
+      child: Row(
+        children: [
+          if (image != null && image.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(image, width: 48, height: 48, fit: BoxFit.cover),
+            )
+          else
+            const CircleAvatar(child: Icon(Icons.account_balance)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(bankName, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(holder, style: theme.textTheme.bodyMedium),
+                Text(account, style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted)),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: onCopy,
+            icon: const Icon(Icons.copy, size: 18),
+            label: const Text('Copy'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
