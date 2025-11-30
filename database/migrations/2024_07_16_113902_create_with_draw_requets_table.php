@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('with_draw_requests', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('agent_id');
+            $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('amount');
             $table->string('account_name');
             $table->string('account_number');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('agent_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('teacher_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('payment_type_id')->references('id')->on('payment_types')->onDelete('cascade');
         });
     }

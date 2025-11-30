@@ -25,18 +25,18 @@ class WithDrawRequestController extends Controller
             'password' => ['required']
         ]);
 
-        $player = Auth::user();
-        if ($request->amount > $player->balanceFloat) {
+        $student = Auth::user();
+        if ($request->amount > $student->balance) {
             return $this->error('', 'Insufficient Balance', 401);
         }
 
-        if (!Hash::check($request->password, $player->password)) {
+        if (!Hash::check($request->password, $student->password)) {
             return $this->error('', 'Your password is wrong!', 401);
         }
 
         $withdraw = WithDrawRequest::create([
-            'user_id' => $player->id,
-            'agent_id' => $player->agent_id,
+            'user_id' => $student->id,
+            'teacher_id' => $student->teacher_id,
             'amount' => $request->amount,
             'account_name' => $request->account_name,
             'account_number' => $request->account_number,

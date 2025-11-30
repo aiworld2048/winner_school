@@ -24,7 +24,7 @@ class DepositRequestController extends Controller
             'amount' => ['required', 'integer', 'min: 1000'],
             'refrence_no' => ['required', 'digits:6'],
         ]);
-        $player = Auth::user();
+        $student = Auth::user();
         $image = null;
 
         if ($request->hasFile('image')) {
@@ -33,10 +33,16 @@ class DepositRequestController extends Controller
             $image->move(public_path('assets/img/deposit/'), $filename);
         }
 
+        $teacherID = $student->teacher_id ?? null;
+
+        if (!$teacherID) {
+            return $this->error('', 'Teacher information is missing. Please contact support.', 400);
+        }
+
         $depositData = [
             'agent_payment_type_id' => $request->agent_payment_type_id,
-            'user_id' => $player->id,
-            'agent_id' => $player->agent_id,
+            'user_id' => $student->id,
+            'teacher_id' => $teacherID,
             'amount' => $request->amount,
             'refrence_no' => $request->refrence_no,
         ];
@@ -47,13 +53,14 @@ class DepositRequestController extends Controller
 
         $deposit = DepositRequest::create($depositData);
 
-        $agent = User::find($player->agent_id);
-        if ($agent) {
-            Log::info('Triggering PlayerDepositNotification for agent:', [
-                'agent_id' => $player->agent_id,
+        $teacher = User::find($teacherID);
+        if ($teacher) {
+            Log::info('Triggering PlayerDepositNotification for teacher:', [
+                'teacher_id' => $student->teacher_id,
+                'student_id' => $student->id,
                 'deposit_id' => $deposit->id,
             ]);
-            $agent->notify(new PlayerDepositNotification($deposit));
+            $teacher->notify(new PlayerDepositNotification($deposit));
         }
 
         return $this->success($deposit, 'Deposit Request Success');

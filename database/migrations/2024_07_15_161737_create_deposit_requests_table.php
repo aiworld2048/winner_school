@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('deposit_requests', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('agent_id');
+            $table->unsignedBigInteger('teacher_id');
             $table->unsignedBigInteger('agent_payment_type_id');
             $table->unsignedBigInteger('amount');
             $table->unsignedBigInteger('refrence_no');
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('teacher_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('agent_payment_type_id')->references('id')->on('banks')->onDelete('cascade');
         });
     }
