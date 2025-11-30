@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\Teacher\LessonController as TeacherLessonApiCont
 use App\Http\Controllers\Api\V1\Teacher\StudentController as TeacherStudentApiController;
 use App\Http\Controllers\Api\V1\Teacher\SubjectController as TeacherSubjectApiController;
 use App\Http\Controllers\Api\V1\Student\LessonController as StudentLessonApiController;
+use App\Http\Controllers\Api\V1\Student\NoteController as StudentNoteController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use App\Http\Controllers\Api\V1\PublicHighlightsController;
 use App\Http\Controllers\Api\V1\DictionaryController;
@@ -62,6 +63,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('student')->group(function () {
         Route::get('lessons', [StudentLessonApiController::class, 'index']);
         Route::get('lessons/{lesson}', [StudentLessonApiController::class, 'show']);
+        Route::get('notes', [StudentNoteController::class, 'index']);
+        Route::post('notes', [StudentNoteController::class, 'store']);
+        Route::patch('notes/{note}', [StudentNoteController::class, 'update']);
+        Route::delete('notes/{note}', [StudentNoteController::class, 'destroy']);
     });
 });
 

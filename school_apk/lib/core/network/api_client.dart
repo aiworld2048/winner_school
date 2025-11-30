@@ -39,6 +39,38 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> patch(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.patch(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+      );
+      return response.data;
+    } on DioException catch (error) {
+      throw _mapDioError(error);
+    }
+  }
+
+  Future<dynamic> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    try {
+      final response = await _dio.delete(
+        path,
+        queryParameters: queryParameters,
+      );
+      return response.data;
+    } on DioException catch (error) {
+      throw _mapDioError(error);
+    }
+  }
+
   ApiException _mapDioError(DioException error) {
     switch (error.type) {
       case DioExceptionType.connectionTimeout:

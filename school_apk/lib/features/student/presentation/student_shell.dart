@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../dictionary/presentation/dictionary_screen.dart';
 import '../../media/presentation/media_hub_screen.dart';
 import '../../shared/widgets/app_navbar.dart';
+import '../../student_notes/presentation/student_notes_screen.dart';
 import 'screens/student_calculator_screen.dart';
 import 'screens/student_lessons_screen.dart';
 import 'screens/student_profile_screen.dart';
@@ -140,6 +141,16 @@ class _StudentDrawer extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const DictionaryScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: const Text('Notebook'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const StudentNotesScreen()),
                 );
               },
             ),

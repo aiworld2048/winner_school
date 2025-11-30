@@ -12,7 +12,7 @@ class MediaBanner {
   factory MediaBanner.fromJson(Map<String, dynamic> json) {
     return MediaBanner(
       title: json['title']?.toString() ?? 'Banner',
-      image: json['image']?.toString() ?? '',
+      image: (json['image'] ?? json['img'] ?? '').toString(),
       description: json['description'] as String?,
     );
   }

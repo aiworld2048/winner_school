@@ -171,6 +171,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Personal notes created by the student.
+     */
+    public function studentNotes(): HasMany
+    {
+        return $this->hasMany(StudentNote::class);
+    }
+
+    /**
      * Get classes where this user is the class teacher.
      */
     public function classesAsTeacher(): HasMany

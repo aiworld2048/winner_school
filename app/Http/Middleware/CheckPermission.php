@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -29,10 +30,14 @@ class CheckPermission
         
         $permissionList = array_unique($permissionList);
 
+        $roles = $this->asCollection($user->roles ?? null);
+        $permissions = $this->asCollection($user->permissions ?? null);
+        $permissionTitles = $permissions->pluck('title')->toArray();
+
         Log::info('Permission check', [
             'user_id' => $user->id,
-            'roles' => $user->roles->pluck('title')->toArray(),
-            'permissions' => $user->permissions->pluck('title')->toArray(),
+            'roles' => $roles->pluck('title')->toArray(),
+            'permissions' => $permissionTitles,
             'checking_for' => $permissionList,
         ]);
 
@@ -47,7 +52,7 @@ class CheckPermission
         }
 
         // Check if user has any of the required permissions
-        $userPermissions = $user->permissions->pluck('title')->toArray();
+        $userPermissions = $permissionTitles;
         foreach ($permissionList as $permission) {
             if (in_array($permission, $userPermissions) || $user->hasPermission($permission)) {
                 return $next($request);
@@ -55,5 +60,14 @@ class CheckPermission
         }
 
         abort(403, 'Unauthorized action. || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Agent များထံ ဆက်သွယ်ပါ');
+    }
+
+    private function asCollection(mixed $value): Collection
+    {
+        if ($value instanceof Collection) {
+            return $value;
+        }
+
+        return collect($value ?? []);
     }
 }

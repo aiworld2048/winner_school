@@ -60,12 +60,14 @@ class MediaRepository {
   }
 
   Map<String, dynamic> _resolveImage(Map<String, dynamic> json) {
-    final image = json['image'];
-    if (image is String && image.isNotEmpty) {
-      json = Map<String, dynamic>.from(json);
-      json['image'] = resolveImageUrl(image);
+    final mutable = Map<String, dynamic>.from(json);
+    final rawImage = mutable['image'] ?? mutable['img'] ?? mutable['banner'] ?? mutable['thumbnail'];
+
+    if (rawImage is String && rawImage.isNotEmpty) {
+      mutable['image'] = resolveImageUrl(rawImage);
     }
-    return json;
+
+    return mutable;
   }
 }
 
