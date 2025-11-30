@@ -22,8 +22,7 @@ class StudentClassAssignmentController extends Controller
             ->orderBy('name')
             ->paginate(20);
 
-        $classes = $teacher->classesAsTeacher()
-            ->orderBy('grade_level')
+        $classes = SchoolClass::orderBy('grade_level')
             ->orderBy('section')
             ->get();
 
@@ -72,11 +71,6 @@ class StudentClassAssignmentController extends Controller
         $data = $request->validate([
             'class_id' => ['nullable', 'exists:classes,id'],
         ]);
-
-        if ($data['class_id']) {
-            $class = SchoolClass::findOrFail($data['class_id']);
-            abort_unless($class->class_teacher_id === $teacher->id, 403);
-        }
 
         $student->update([
             'class_id' => $data['class_id'] ?? null,

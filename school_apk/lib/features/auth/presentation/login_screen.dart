@@ -29,7 +29,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _showLoginModal(context);
+        final highlightData = ref.read(publicHighlightsProvider).valueOrNull;
+        _showLoginModal(context, highlightData);
       }
     });
   }
@@ -66,7 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           label: 'Login',
           active: true,
           isPrimary: true,
-          onTap: () => _showLoginModal(context),
+          onTap: () => _showLoginModal(context, highlightData),
         ),
         AuthNavAction(
           label: 'Register',
@@ -111,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Future<void> _showLoginModal(BuildContext context) async {
+  Future<void> _showLoginModal(BuildContext context, PublicHighlights? highlightData) async {
     if (_modalVisible) return;
     _modalVisible = true;
     await showDialog(
@@ -125,9 +126,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             builder: (context, ref, _) {
               final authState = ref.watch(authControllerProvider);
               final theme = Theme.of(context);
+              final snapshot = ref.watch(publicHighlightsProvider);
+              final data = highlightData ?? snapshot.valueOrNull;
               return ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: _buildLoginForm(dialogContext, theme, authState, ref),
+                child: _buildLoginForm(dialogContext, theme, authState, ref, data),
               );
             },
           ),
@@ -148,6 +151,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ThemeData theme,
     AsyncValue authState,
     WidgetRef ref,
+    PublicHighlights? highlights,
   ) {
     return FrostedGlassCard(
       child: AutofillGroup(
