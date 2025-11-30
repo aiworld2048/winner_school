@@ -30,13 +30,22 @@ class AuthRepository {
     required String name,
     required String phone,
     required String password,
+    int? classId,
+    int? subjectId,
+    int? academicYearId,
   }) async {
-    final response = await _apiClient.post('register', data: {
+    final Map<String, dynamic> payload = {
       'name': name,
       'phone': phone,
       'password': password,
       'password_confirmation': password,
-    });
+    };
+
+    if (classId != null) payload['class_id'] = classId;
+    if (subjectId != null) payload['subject_id'] = subjectId;
+    if (academicYearId != null) payload['academic_year_id'] = academicYearId;
+
+    final response = await _apiClient.post('register', data: payload);
 
     final data = response['data'] as Map<String, dynamic>;
     final userJson = data['user'] as Map<String, dynamic>;

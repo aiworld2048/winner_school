@@ -7,7 +7,7 @@ import '../../../../core/theme/app_spacing.dart';
 class AuthShell extends StatelessWidget {
   const AuthShell({
     super.key,
-    required this.form,
+    this.form,
     required this.heroTitle,
     required this.heroSubtitle,
     required this.heroHighlights,
@@ -17,7 +17,7 @@ class AuthShell extends StatelessWidget {
     this.promoSection,
   });
 
-  final Widget form;
+  final Widget? form;
   final String heroTitle;
   final String heroSubtitle;
   final List<String> heroHighlights;
@@ -35,6 +35,8 @@ class AuthShell extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth >= 900;
+              final hasForm = form != null;
+
               if (isWide) {
                 return Center(
                   child: ConstrainedBox(
@@ -56,19 +58,21 @@ class AuthShell extends StatelessWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 32),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.symmetric(vertical: 24),
-                                child: ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 460),
-                                  child: form,
+                          if (hasForm) ...[
+                            const SizedBox(width: 32),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.topCenter,
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.symmetric(vertical: 24),
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(maxWidth: 460),
+                                    child: form!,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),
@@ -86,8 +90,10 @@ class AuthShell extends StatelessWidget {
                       const SizedBox(height: 24),
                       promoSection!,
                     ],
-                    const SizedBox(height: 28),
-                    form,
+                    if (hasForm) ...[
+                      const SizedBox(height: 28),
+                      form!,
+                    ],
                   ],
                 ),
               );

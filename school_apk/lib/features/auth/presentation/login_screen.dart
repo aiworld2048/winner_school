@@ -22,6 +22,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _modalVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _showLoginModal(context);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -51,7 +62,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       heroHighlights: const ['Teacher workspace', 'Secure wallet', 'Student portal'],
       heroBadge: 'Winner School Platform',
       navActions: [
-        const AuthNavAction(label: 'Login', active: true, isPrimary: true),
+        AuthNavAction(
+          label: 'Login',
+          active: true,
+          isPrimary: true,
+          onTap: () => _showLoginModal(context),
+        ),
         AuthNavAction(
           label: 'Register',
           onTap: authState.isLoading
@@ -82,14 +98,75 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-      form: FrostedGlassCard(
-        child: AutofillGroup(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-              Text('Welcome back', style: theme.textTheme.headlineSmall),
+    );
+  }
+
+  void _showHighlightsSheet(BuildContext context, PublicHighlights data) {
+    showModalBottomSheet(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => AuthHighlightsSheet(data: data),
+    );
+  }
+
+  Future<void> _showLoginModal(BuildContext context) async {
+    if (_modalVisible) return;
+    _modalVisible = true;
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final authState = ref.watch(authControllerProvider);
+              final theme = Theme.of(context);
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: _buildLoginForm(dialogContext, theme, authState, ref),
+              );
+            },
+          ),
+        );
+      },
+    );
+    if (mounted) {
+      setState(() {
+        _modalVisible = false;
+      });
+    } else {
+      _modalVisible = false;
+    }
+  }
+
+  Widget _buildLoginForm(
+    BuildContext dialogContext,
+    ThemeData theme,
+    AsyncValue authState,
+    WidgetRef ref,
+  ) {
+    return FrostedGlassCard(
+      child: AutofillGroup(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Text('Welcome back', style: theme.textTheme.headlineSmall),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Close',
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                  ),
+                ],
+              ),
               const SizedBox(height: 6),
               Text(
                 'Sign in to access your classes, lessons, and wallet.',
@@ -148,7 +225,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: authState.isLoading
                     ? null
                     : () {
-                        Navigator.of(context).push(
+                        Navigator.of(dialogContext).pop();
+                        Navigator.of(dialogContext).push(
                           MaterialPageRoute(builder: (_) => const RegisterScreen()),
                         );
                       },
@@ -185,16 +263,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showHighlightsSheet(BuildContext context, PublicHighlights data) {
-    showModalBottomSheet(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      isScrollControlled: true,
-      builder: (_) => AuthHighlightsSheet(data: data),
     );
   }
 }

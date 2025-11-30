@@ -40,13 +40,23 @@ class AuthController extends StateNotifier<AsyncValue<AuthUser?>> {
     }
   }
 
-  Future<void> register(String name, String phone, String password) async {
+  Future<void> register(
+    String name,
+    String phone,
+    String password, {
+    int? classId,
+    int? subjectId,
+    int? academicYearId,
+  }) async {
     state = const AsyncLoading();
     try {
       final user = await _repository.register(
         name: name,
         phone: phone,
         password: password,
+        classId: classId,
+        subjectId: subjectId,
+        academicYearId: academicYearId,
       );
       state = AsyncData(user);
     } catch (e, st) {

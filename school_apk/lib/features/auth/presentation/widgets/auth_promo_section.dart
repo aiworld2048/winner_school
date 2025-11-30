@@ -17,6 +17,10 @@ class AuthPromoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
+    final headerColor = Colors.white;
+    final subheaderColor = Colors.white.withOpacity(0.75);
+    final actionColor = Colors.white;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -26,11 +30,14 @@ class AuthPromoSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Preview the academy', style: textTheme.titleLarge),
+                  Text(
+                    'Preview the academy',
+                    style: textTheme.titleLarge?.copyWith(color: headerColor),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     'Browse featured courses, lessons, and classes before signing in.',
-                    style: textTheme.bodyMedium?.copyWith(color: AppColors.muted),
+                    style: textTheme.bodyMedium?.copyWith(color: subheaderColor),
                   ),
                 ],
               ),
@@ -38,6 +45,7 @@ class AuthPromoSection extends StatelessWidget {
             if (onViewCourses != null)
               TextButton.icon(
                 onPressed: onViewCourses,
+                style: TextButton.styleFrom(foregroundColor: actionColor),
                 icon: const Icon(Icons.explore_outlined),
                 label: const Text('View courses'),
               ),

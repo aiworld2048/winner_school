@@ -4,12 +4,14 @@ class PublicHighlights {
     required this.courses,
     required this.lessons,
     required this.classes,
+    required this.academicYears,
   });
 
   final PublicStats stats;
   final List<PublicCourse> courses;
   final List<PublicLesson> lessons;
   final List<PublicClass> classes;
+  final List<PublicAcademicYear> academicYears;
 
   factory PublicHighlights.fromJson(Map<String, dynamic> json) {
     return PublicHighlights(
@@ -22,6 +24,9 @@ class PublicHighlights {
           .toList(),
       classes: (json['classes'] as List<dynamic>? ?? [])
           .map((item) => PublicClass.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      academicYears: (json['academic_years'] as List<dynamic>? ?? [])
+          .map((item) => PublicAcademicYear.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
@@ -111,6 +116,32 @@ class PublicClass {
       name: json['name']?.toString() ?? '',
       gradeLevel: json['grade_level'] is int ? json['grade_level'] as int : int.tryParse('${json['grade_level']}'),
       section: json['section']?.toString(),
+    );
+  }
+}
+
+class PublicAcademicYear {
+  const PublicAcademicYear({
+    required this.id,
+    required this.name,
+    this.code,
+    this.startDate,
+    this.endDate,
+  });
+
+  final int id;
+  final String name;
+  final String? code;
+  final String? startDate;
+  final String? endDate;
+
+  factory PublicAcademicYear.fromJson(Map<String, dynamic> json) {
+    return PublicAcademicYear(
+      id: _readInt(json['id']),
+      name: json['name']?.toString() ?? '',
+      code: json['code']?.toString(),
+      startDate: json['start_date']?.toString(),
+      endDate: json['end_date']?.toString(),
     );
   }
 }
