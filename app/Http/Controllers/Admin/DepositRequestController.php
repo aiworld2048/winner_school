@@ -32,7 +32,7 @@ class DepositRequestController extends Controller
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
-            ->where('agent_id', $owner->id) // agent_id = owner_id
+            ->where('teacher_id', $owner->id) // agent_id = owner_id
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
@@ -58,7 +58,7 @@ class DepositRequestController extends Controller
 
             // Check if user has permission to handle this deposit
             // Note: agent_id is actually owner_id
-            if ($deposit->agent_id !== $owner->id) {
+            if ($deposit->teacher_id !== $owner->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -126,7 +126,7 @@ class DepositRequestController extends Controller
 
             // Check if user has permission to handle this deposit
             // Note: agent_id is actually owner_id
-            if ($deposit->agent_id !== $owner->id) {
+            if ($deposit->teacher_id !== $owner->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -168,7 +168,7 @@ class DepositRequestController extends Controller
 
         // Check if user has permission to handle this deposit
         // Note: agent_id is actually owner_id
-        if ($deposit->agent_id !== $owner->id) {
+        if ($deposit->teacher_id !== $owner->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 
@@ -188,7 +188,7 @@ class DepositRequestController extends Controller
 
         // Check if user has permission to handle this deposit
         // Note: agent_id is actually owner_id
-        if ($deposit->agent_id !== $owner->id) {
+        if ($deposit->teacher_id !== $owner->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 

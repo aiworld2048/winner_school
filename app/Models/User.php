@@ -260,5 +260,11 @@ class User extends Authenticatable
         return false;
     }
 
+      // A user belongs to an teacher (parent)
+      public function agent()
+      {
+          return $this->belongsTo(User::class, 'teacher_id');
+      }
+
 
 }

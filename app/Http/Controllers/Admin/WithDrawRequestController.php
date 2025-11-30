@@ -29,9 +29,9 @@ class WithDrawRequestController extends Controller
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $withdraws = WithDrawRequest::with(['user', 'paymentType'])
-            ->where('agent_id', $agent->id)
+            ->where('teacher_id', $agent->id)
             ->when($isSubAgent, function ($query) use ($sub_acc_id) {
-                $query->where('agent_id', $sub_acc_id->id);
+                $query->where('teacher_id', $sub_acc_id->id);
             })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
@@ -63,7 +63,7 @@ class WithDrawRequestController extends Controller
             'user_id' => $user->id,
             'user_name' => $user->user_name,
             'is_sub_agent' => $isSubAgent,
-            'agent_id' => $agent ? $agent->id : null,
+            'teacher_id' => $agent ? $agent->id : null,
             'agent_name' => $agent ? $agent->user_name : null,
             'player_id' => $player ? $player->id : null,
             'player_name' => $player ? $player->user_name : null,

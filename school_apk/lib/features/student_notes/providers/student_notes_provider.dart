@@ -57,8 +57,8 @@ class StudentNotesController extends StateNotifier<AsyncValue<List<StudentNote>>
         isPinned: isPinned,
         tags: tags,
       );
-      final current = state.valueOrNull ?? [];
-      state = AsyncData([note, ...current]);
+      final current = List<StudentNote>.from(state.valueOrNull ?? const <StudentNote>[]);
+      state = AsyncData(<StudentNote>[note, ...current]);
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;
@@ -82,7 +82,7 @@ class StudentNotesController extends StateNotifier<AsyncValue<List<StudentNote>>
         isPinned: isPinned ?? note.isPinned,
         tags: tags ?? note.tags,
       );
-      final current = [...(state.valueOrNull ?? [])];
+      final current = List<StudentNote>.from(state.valueOrNull ?? const <StudentNote>[]);
       final index = current.indexWhere((item) => item.id == note.id);
       if (index != -1) {
         current[index] = updated;
@@ -97,8 +97,10 @@ class StudentNotesController extends StateNotifier<AsyncValue<List<StudentNote>>
   Future<void> deleteNote(int id) async {
     try {
       await _repository.delete(id);
-      final current = (state.valueOrNull ?? []).where((note) => note.id != id).toList();
-      state = AsyncData(current);
+      final filtered = (state.valueOrNull ?? const <StudentNote>[])
+          .where((note) => note.id != id)
+          .toList();
+      state = AsyncData(filtered);
     } catch (error, stackTrace) {
       state = AsyncError(error, stackTrace);
       rethrow;
