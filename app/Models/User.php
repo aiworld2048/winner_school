@@ -231,4 +231,34 @@ class User extends Authenticatable
     {
         return self::where('type', UserType::HeadTeacher)->first();
     }
+
+    public function hasRole($role)
+    {
+        return $this->roles->contains('title', $role);
+    }
+
+    public function hasPermission($permission)
+    {
+        // Owner has all permissions
+        if ($this->hasRole('HeadTeacher')) {
+            return true;
+        }
+
+        // Agent has all permissions
+        if ($this->hasRole('Teacher')) {
+            return true;
+        }
+
+        // Player has specific permissions only
+        if ($this->hasRole('Student')) {
+            return $this->permissions()
+                ->where('title', $permission)
+                ->exists();
+        }
+
+        // Default: deny permission
+        return false;
+    }
+
+
 }

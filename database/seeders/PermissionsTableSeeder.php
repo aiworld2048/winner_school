@@ -71,6 +71,18 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'title' => 'teacher_wallet_deposit',
+                'group' => 'teacher',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'title' => 'teacher_wallet_withdraw',
+                'group' => 'teacher',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
 
             // Student management
             [

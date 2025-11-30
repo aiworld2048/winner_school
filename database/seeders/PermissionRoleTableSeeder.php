@@ -24,6 +24,7 @@ class PermissionRoleTableSeeder extends Seeder
             'message_send', 'message_view', 'announcement_manage',
             'report_student', 'report_teacher', 'report_academic', 'report_financial',
             'profile_view', 'profile_edit', 'password_change',
+            'teacher_wallet_deposit', 'teacher_wallet_withdraw',
         ],
         'Teacher' => [
             'admin_dashboard',
@@ -34,6 +35,7 @@ class PermissionRoleTableSeeder extends Seeder
             'message_send', 'message_view',
             'report_student', 'report_academic',
             'profile_view', 'profile_edit', 'password_change',
+            'teacher_wallet_deposit', 'teacher_wallet_withdraw',
         ],
         'Student' => [
             'admin_dashboard',
