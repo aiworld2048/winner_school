@@ -44,8 +44,9 @@ class PublicHighlightsController extends Controller
             ->values();
 
         $classes = SchoolClass::select('id', 'name', 'grade_level', 'section')
-            ->latest('updated_at')
-            ->take(5)
+            ->orderBy('grade_level')
+            ->orderBy('name')
+            ->orderBy('section')
             ->get()
             ->map(fn ($class) => [
                 'id' => $class->id,

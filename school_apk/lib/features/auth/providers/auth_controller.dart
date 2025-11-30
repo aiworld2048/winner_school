@@ -47,6 +47,7 @@ class AuthController extends StateNotifier<AsyncValue<AuthUser?>> {
     int? classId,
     int? subjectId,
     int? academicYearId,
+    String? referralCode,
   }) async {
     state = const AsyncLoading();
     try {
@@ -57,6 +58,7 @@ class AuthController extends StateNotifier<AsyncValue<AuthUser?>> {
         classId: classId,
         subjectId: subjectId,
         academicYearId: academicYearId,
+        referralCode: referralCode,
       );
       state = AsyncData(user);
     } catch (e, st) {

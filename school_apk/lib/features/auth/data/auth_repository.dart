@@ -33,6 +33,7 @@ class AuthRepository {
     int? classId,
     int? subjectId,
     int? academicYearId,
+    String? referralCode,
   }) async {
     final Map<String, dynamic> payload = {
       'name': name,
@@ -44,6 +45,9 @@ class AuthRepository {
     if (classId != null) payload['class_id'] = classId;
     if (subjectId != null) payload['subject_id'] = subjectId;
     if (academicYearId != null) payload['academic_year_id'] = academicYearId;
+    if (referralCode != null && referralCode.trim().isNotEmpty) {
+      payload['referral_code'] = referralCode.trim();
+    }
 
     final response = await _apiClient.post('register', data: payload);
 

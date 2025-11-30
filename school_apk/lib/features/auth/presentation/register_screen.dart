@@ -21,6 +21,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _referralController = TextEditingController(text: 'winnerschool');
   bool _obscurePassword = true;
   bool _modalVisible = false;
   int? _selectedClassId;
@@ -41,6 +42,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _referralController.dispose();
     super.dispose();
   }
 
@@ -53,6 +55,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           classId: _selectedClassId,
           subjectId: _selectedSubjectId,
           academicYearId: _selectedAcademicYearId,
+          referralCode: _referralController.text.trim(),
         );
     if (!mounted) return;
     Navigator.of(dialogContext).pop();
@@ -227,6 +230,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 ),
                 validator: (value) =>
                     value != null && value.length >= 6 ? null : 'Use at least 6 characters',
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _referralController,
+                decoration: const InputDecoration(
+                  labelText: 'Referral code',
+                  prefixIcon: Icon(Icons.card_membership_rounded),
+                ),
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<int>(

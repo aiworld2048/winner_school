@@ -22,13 +22,14 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'name' => 'required|min:3|string',
+            'name' => ['required', 'string', 'min:3'],
             'password' => 'required|min:6',
             'phone' => ['required', 'regex:/^[0-9]+$/', 'unique:users,phone'],
             // 'referral_code' => ['required'],
             'class_id' => ['nullable', 'exists:classes,id'],
             'subject_id' => ['nullable', 'exists:subjects,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
+            'referral_code' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -56,17 +56,19 @@ class PublicStats {
 }
 
 class PublicCourse {
-  const PublicCourse({required this.id, required this.title, this.description});
+  const PublicCourse({required this.id, required this.title, this.description, this.descriptionShort});
 
   final int id;
   final String title;
   final String? description;
+  final String? descriptionShort;
 
   factory PublicCourse.fromJson(Map<String, dynamic> json) {
     return PublicCourse(
       id: _readInt(json['id']),
       title: json['title']?.toString() ?? 'Course',
       description: json['description']?.toString(),
+      descriptionShort: json['description_short']?.toString(),
     );
   }
 }

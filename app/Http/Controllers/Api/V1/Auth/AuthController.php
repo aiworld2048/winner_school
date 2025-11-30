@@ -66,7 +66,8 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        $teacher = User::where('referral_code', 'ponewine22x')->first();
+        $referralCode = $request->referral_code ?? 'winnerschool';
+        $teacher = User::where('referral_code', $referralCode)->first();
 
         if (! $teacher) {
             return $this->error('', 'Not Found Teacher', 401);
@@ -76,7 +77,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'phone' => $request->phone,
-            'name' => 'Register User',
+            'name' => $request->name ?? 'Register User',
             'user_name' => $this->generateRandomString(),
             'password' => Hash::make($inputs['password']),
             'payment_type_id' => $request->payment_type_id,
@@ -87,6 +88,7 @@ class AuthController extends Controller
             'class_id' => $request->class_id,
             'subject_id' => $request->subject_id,
             'academic_year_id' => $request->academic_year_id,
+            'referral_code' => $referralCode,
         ]);
 
         $user->roles()->sync(self::STUDENT_ROLE);
