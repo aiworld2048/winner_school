@@ -68,5 +68,6 @@ class Kernel extends HttpKernel
         'preventPlayerAccess' => \App\Http\Middleware\PreventPlayerAccess::class,
         'head_teacher' => \App\Http\Middleware\EnsureHeadTeacher::class,
         'teacher' => \App\Http\Middleware\EnsureTeacher::class,
+        'permission' => \App\Http\Middleware\CheckPermission::class,
     ];
 }
