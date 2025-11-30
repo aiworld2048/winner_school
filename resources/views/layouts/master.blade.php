@@ -247,6 +247,13 @@
                                     <p>Dictionary</p>
                                         </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.lesson-views.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.lesson-views.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book-reader"></i>
+                                    <p>Lesson Views</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.withdraw') }}"
@@ -283,6 +290,13 @@
                                    class="nav-link {{ request()->routeIs('teacher.lessons.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-book"></i>
                                     <p>My Lessons</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.lesson-views.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.lesson-views.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book-reader"></i>
+                                    <p>Lesson Views</p>
                                 </a>
                             </li>
                             <li class="nav-item">

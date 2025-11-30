@@ -18,7 +18,7 @@ class PermissionRoleTableSeeder extends Seeder
             'parent_index', 'parent_create', 'parent_edit', 'parent_delete', 'parent_view',
             'guardian_index', 'guardian_create', 'guardian_edit', 'guardian_delete', 'guardian_view',
             'academic_year_manage', 'class_manage', 'subject_manage', 'schedule_manage', 'exam_manage', 'grade_manage',
-            'lesson_index', 'lesson_create', 'lesson_edit', 'lesson_delete', 'lesson_view',
+            'lesson_index', 'lesson_create', 'lesson_edit', 'lesson_delete', 'lesson_view', 'lesson_activity_view',
             'attendance_view', 'attendance_mark', 'attendance_edit', 'attendance_report',
             'fee_view', 'fee_collect', 'fee_manage', 'fee_report',
             'message_send', 'message_view', 'announcement_manage',
@@ -29,7 +29,7 @@ class PermissionRoleTableSeeder extends Seeder
         'Teacher' => [
             'admin_dashboard',
             'student_index', 'student_create', 'student_edit', 'student_delete', 'student_view', 'student_assign_teacher',
-            'lesson_index', 'lesson_create', 'lesson_edit', 'lesson_delete', 'lesson_view',
+            'lesson_index', 'lesson_create', 'lesson_edit', 'lesson_delete', 'lesson_view', 'lesson_activity_view',
             'class_manage', 'subject_manage', 'schedule_manage', 'exam_manage', 'grade_manage',
             'attendance_view', 'attendance_mark', 'attendance_edit', 'attendance_report',
             'message_send', 'message_view',

@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\TeacherSubjectController;
 use App\Http\Controllers\Admin\DictionaryEntryController;
+use App\Http\Controllers\Admin\LessonViewController;
 use App\Http\Controllers\Admin\TransferLogController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +67,11 @@ Route::group([
 
     // ==================== Dictionary ====================
     Route::resource('dictionary', DictionaryEntryController::class)->except(['show']);
+
+    // ==================== Lesson analytics ====================
+    Route::middleware(['permission:lesson_view'])->group(function () {
+        Route::get('lesson-views', [LessonViewController::class, 'index'])->name('lesson-views.index');
+    });
 
     // ==================== Deposit Management ====================
     Route::middleware(['permission:teacher_wallet_deposit'])->group(function () {

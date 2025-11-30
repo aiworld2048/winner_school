@@ -255,6 +255,12 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'title' => 'lesson_activity_view',
+                'group' => 'lesson',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
 
             // Attendance management
             [
