@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Teacher\SubjectController as TeacherSubjectApiCo
 use App\Http\Controllers\Api\V1\Student\LessonController as StudentLessonApiController;
 use App\Http\Controllers\Api\V1\WithDrawRequestController;
 use App\Http\Controllers\Api\V1\PublicHighlightsController;
+use App\Http\Controllers\Api\V1\DictionaryController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -69,3 +70,4 @@ Route::get('popup-ads-banner', [BannerController::class, 'AdsBannerIndex']);
 Route::get('banner', [BannerController::class, 'index']);
 Route::get('videoads', [BannerController::class, 'ApiVideoads']);
 Route::get('public/highlights', PublicHighlightsController::class);
+Route::get('dictionary', [DictionaryController::class, 'index']);

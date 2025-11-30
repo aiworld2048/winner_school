@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\TeacherSubjectController;
+use App\Http\Controllers\Admin\DictionaryEntryController;
 use App\Http\Controllers\Admin\TransferLogController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
 use Illuminate\Support\Facades\Route;
@@ -63,5 +64,6 @@ Route::group([
     Route::resource('contacts', ContactController::class);
     Route::get('contact', [ContactController::class, 'playerContact'])->name('contact.index');
 
-   
+    // ==================== Dictionary ====================
+    Route::resource('dictionary', DictionaryEntryController::class)->except(['show']);
 });

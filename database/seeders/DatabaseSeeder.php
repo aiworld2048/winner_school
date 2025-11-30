@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             AcademicYearsTableSeeder::class,
             SubjectsTableSeeder::class,
             ClassesTableSeeder::class,
+            DictionarySeeder::class,
         ]);
     }
 }

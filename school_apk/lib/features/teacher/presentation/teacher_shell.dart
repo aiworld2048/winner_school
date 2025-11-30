@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../dictionary/presentation/dictionary_screen.dart';
 import '../../media/presentation/media_hub_screen.dart';
 import '../../shared/widgets/app_navbar.dart';
 import '../providers/teacher_providers.dart';
@@ -40,6 +41,15 @@ class _TeacherShellState extends ConsumerState<TeacherShell> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MediaHubScreen()),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Dictionary',
+            icon: const Icon(Icons.menu_book_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DictionaryScreen()),
               );
             },
           ),

@@ -240,6 +240,13 @@
                                     <p>Subjects</p>
                                         </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.dictionary.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.dictionary.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>Dictionary</p>
+                                        </a>
+                            </li>
                         @endif
 
                         @if($userType === \App\Enums\UserType::Teacher)
@@ -257,6 +264,13 @@
                                     <i class="nav-icon fas fa-book"></i>
                                     <p>My Lessons</p>
                                 </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.dictionary.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.dictionary.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-book"></i>
+                                    <p>Dictionary</p>
+                                        </a>
                             </li>
                         @endif
 
