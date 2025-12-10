@@ -68,7 +68,7 @@ class DepositRequestController extends Controller
         $depositData = [
             'agent_payment_type_id' => $request->agent_payment_type_id,
             'user_id' => $player->id,
-            'agent_id' => $player->agent_id,
+            'teacher_id' => $player->teacher_id,
             'amount' => $request->amount,
             'refrence_no' => $request->refrence_no,
         ];
@@ -79,10 +79,10 @@ class DepositRequestController extends Controller
 
         $deposit = DepositRequest::create($depositData);
 
-        $agent = User::find($player->agent_id);
+        $agent = User::find($player->teacher_id);
         if ($agent) {
             Log::info('Triggering PlayerDepositNotification for agent:', [
-                'agent_id' => $player->agent_id,
+                'teacher_id' => $player->teacher_id,
                 'deposit_id' => $deposit->id,
             ]);
             $agent->notify(new PlayerDepositNotification($deposit));
