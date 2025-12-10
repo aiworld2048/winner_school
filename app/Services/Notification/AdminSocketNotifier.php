@@ -140,7 +140,7 @@ class AdminSocketNotifier
         return Cache::remember('notification.owner_ids', now()->addMinutes(10), function () {
             return User::query()
                 ->whereIn('type', [
-                    UserType::Owner->value,
+                    UserType::HeadTeacher->value,
                     UserType::SystemWallet->value,
                 ])
                 ->pluck('id');
