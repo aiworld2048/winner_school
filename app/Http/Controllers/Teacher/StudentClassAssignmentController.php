@@ -52,7 +52,7 @@ class StudentClassAssignmentController extends Controller
             'password' => Hash::make($data['password']),
             'teacher_id' => $teacher->id,
             'status' => 1,
-            'is_changed_password' => 0,
+            'is_changed_password' => 1,
             'type' => UserType::Student->value,
         ]);
         $student->roles()->sync(self::STUDENT_ROLE);
