@@ -6,6 +6,7 @@ use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\WithDrawRequest;
+use App\Services\CustomWalletService;
 use App\Services\WalletService;
 use Carbon\Carbon;
 use Exception;
@@ -15,24 +16,16 @@ use Illuminate\Support\Facades\Log;
 
 class WithDrawRequestController extends Controller
 {
-    protected const SUB_AGENT_ROLE = 'SubAgent';
-
     public function index(Request $request)
     {
         $user = Auth::user();
-        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        $agent = $isSubAgent ? $user->agent : $user;
-
-        $sub_acc_id = $user->agent;
+        $agent = $user;
 
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $withdraws = WithDrawRequest::with(['user', 'paymentType'])
             ->where('teacher_id', $agent->id)
-            ->when($isSubAgent, function ($query) use ($sub_acc_id) {
-                $query->where('teacher_id', $sub_acc_id->id);
-            })
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
@@ -42,7 +35,7 @@ class WithDrawRequestController extends Controller
 
         $totalWithdraws = $withdraws->sum('amount');
 
-        return view('admin.withdraw_request.index', compact('withdraws', 'totalWithdraws', 'isSubAgent'));
+        return view('admin.withdraw_request.index', compact('withdraws', 'totalWithdraws'));
     }
 
     public function statusChangeIndex(Request $request, WithDrawRequest $withdraw)
@@ -55,24 +48,22 @@ class WithDrawRequestController extends Controller
         ]);
 
         $user = Auth::user();
-        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        $agent = $isSubAgent ? $user->agent : $user;
+        $agent = $user;
         $player = User::find($request->player);
 
         Log::info('User and agent info', [
             'user_id' => $user->id,
             'user_name' => $user->user_name,
-            'is_sub_agent' => $isSubAgent,
             'teacher_id' => $agent ? $agent->id : null,
             'agent_name' => $agent ? $agent->user_name : null,
             'player_id' => $player ? $player->id : null,
             'player_name' => $player ? $player->user_name : null,
-            'player_balance' => $player ? $player->balanceFloat : null,
+            'player_balance' => $player ? $player->balance : null,
         ]);
 
-        if ($request->status == 1 && $player->balanceFloat < $request->amount) {
+        if ($request->status == 1 && $player->balance < $request->amount) {
             Log::warning('Insufficient balance for withdraw', [
-                'player_balance' => $player->balanceFloat,
+                'player_balance' => $player->balance,
                 'request_amount' => $request->amount,
                 'withdraw_id' => $withdraw->id,
             ]);
@@ -85,15 +76,11 @@ class WithDrawRequestController extends Controller
         Log::info('Updating withdraw request', [
             'withdraw_id' => $withdraw->id,
             'status' => $request->status,
-            'sub_agent_id' => $user->id,
-            'sub_agent_name' => $user->user_name,
             'note' => $note,
         ]);
 
         $withdraw->update([
             'status' => $request->status,
-            'sub_agent_id' => $user->id,
-            'sub_agent_name' => $user->user_name,
             'note' => $note,
         ]);
 
@@ -101,13 +88,13 @@ class WithDrawRequestController extends Controller
             Log::info('Processing withdraw approval', [
                 'withdraw_id' => $withdraw->id,
                 'amount' => $request->amount,
-                'player_old_balance' => $player->balanceFloat,
+                'player_old_balance' => $player->balance,
             ]);
 
-            $old_balance = $player->balanceFloat;
+            $old_balance = $player->balance;
 
             try {
-                app(WalletService::class)->transfer($player, $agent, $request->amount,
+                app(CustomWalletService::class)->transfer($player, $agent, $request->amount,
                     TransactionName::Withdraw, [
                         'old_balance' => $old_balance,
                         'new_balance' => $old_balance - $request->amount,
@@ -132,8 +119,6 @@ class WithDrawRequestController extends Controller
                 \App\Models\TransferLog::create([
                     'from_user_id' => $player->id,
                     'to_user_id' => $agent->id,
-                    'sub_agent_id' => $isSubAgent ? $user->id : null,
-                    'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                     'amount' => $request->amount,
                     'type' => 'withdraw',
                     'description' => 'Withdraw request '.$withdraw->id.' approved by '.$user->user_name,
@@ -141,6 +126,7 @@ class WithDrawRequestController extends Controller
                         'withdraw_request_id' => $withdraw->id,
                         'player_old_balance' => $old_balance,
                         'player_new_balance' => $old_balance - $request->amount,
+                        'handled_by' => $user->user_name,
                     ],
                 ]);
 
@@ -163,6 +149,8 @@ class WithDrawRequestController extends Controller
             'final_status' => $request->status,
         ]);
 
+        $this->markWithdrawNotificationsAsRead($withdraw);
+
         return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
     }
 
@@ -173,32 +161,30 @@ class WithDrawRequestController extends Controller
         ]);
 
         $user = Auth::user();
-        $isSubAgent = $user->hasRole(self::SUB_AGENT_ROLE);
-        $agent = $isSubAgent ? $user->agent : $user;
+        $agent = $user;
 
         try {
             $note = 'Withdraw request rejected by '.$user->user_name.' on '.Carbon::now()->timezone('Asia/Yangon')->format('d-m-Y H:i:s');
 
             $withdraw->update([
                 'status' => $request->status,
-                'sub_agent_id' => $user->id,
-                'sub_agent_name' => $user->user_name,
                 'note' => $note,
             ]);
 
             \App\Models\TransferLog::create([
                 'from_user_id' => $withdraw->user_id,
                 'to_user_id' => $agent->id,
-                'sub_agent_id' => $isSubAgent ? $user->id : null,
-                'sub_agent_name' => $isSubAgent ? $user->user_name : null,
                 'amount' => $withdraw->amount,
                 'type' => 'withdraw',
                 'description' => 'Withdraw request '.$withdraw->id.' rejected by '.$user->user_name,
                 'meta' => [
                     'withdraw_request_id' => $withdraw->id,
                     'status' => 'rejected',
+                    'handled_by' => $user->user_name,
                 ],
             ]);
+
+            $this->markWithdrawNotificationsAsRead($withdraw);
 
             return redirect()->route('admin.agent.withdraw')->with('success', 'Withdraw status updated successfully!');
         } catch (Exception $e) {
@@ -206,21 +192,22 @@ class WithDrawRequestController extends Controller
         }
     }
 
-    private function isExistingAgent($userId)
-    {
-        $user = User::find($userId);
-
-        return $user && $user->hasRole(self::SUB_AGENT_ROLE) ? $user->parent : null;
-    }
-
-    private function getAgent()
-    {
-        return $this->isExistingAgent(Auth::id());
-    }
-
     // log withdraw request
     public function WithdrawShowLog(WithDrawRequest $withdraw)
     {
         return view('admin.withdraw_request.view', ['withdraw' => $withdraw]);
+    }
+
+    private function markWithdrawNotificationsAsRead(WithDrawRequest $withdraw): void
+    {
+        $user = Auth::user();
+
+        $user?->unreadNotifications()
+            ->get()
+            ->filter(function ($notification) use ($withdraw) {
+                return ($notification->data['type'] ?? '') === 'withdraw'
+                    && (int) ($notification->data['withdraw_request_id'] ?? 0) === (int) $withdraw->id;
+            })
+            ->each(fn ($notification) => $notification->markAsRead());
     }
 }

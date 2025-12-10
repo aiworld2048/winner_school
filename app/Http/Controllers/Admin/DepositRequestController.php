@@ -19,20 +19,19 @@ class DepositRequestController extends Controller
 {
     public function index(Request $request)
     {
-        // Check permissions - Owner only
-        if (! Auth::user()->hasPermission('deposit')) {
+        // Check permissions
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to access deposit requests.');
         }
 
         $user = Auth::user();
-        // Note: agent_id is actually owner_id (Owner->Player relationship only)
-        $owner = $user;
+        $agent = $user;
 
         $startDate = $request->start_date ?? Carbon::today()->startOfDay()->toDateString();
         $endDate = $request->end_date ?? Carbon::today()->endOfDay()->toDateString();
 
         $deposits = DepositRequest::with(['user', 'bank', 'agent'])
-            ->where('teacher_id', $owner->id) // agent_id = owner_id
+            ->where('teacher_id', $agent->id)
             ->when($request->filled('status') && $request->input('status') !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
@@ -48,23 +47,22 @@ class DepositRequestController extends Controller
     public function statusChangeIndex(Request $request, DepositRequest $deposit)
     {
         // Check permissions
-        if (! Auth::user()->hasPermission('deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit')) {
             abort(403, 'You do not have permission to process deposits.');
         }
 
         try {
             $user = Auth::user();
-            $owner = $user; // No agent system, user is the owner
+            $agent = $user;
 
             // Check if user has permission to handle this deposit
-            // Note: agent_id is actually owner_id
-            if ($deposit->teacher_id !== $owner->id) {
+            if ($deposit->teacher_id !== $agent->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
             $player = User::find($request->player);
 
-            if ($request->status == 1 && $owner->balance < $request->amount) {
+            if ($request->status == 1 && $agent->balance < $request->amount) {
                 return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
             }
 
@@ -77,19 +75,14 @@ class DepositRequestController extends Controller
 
             if ($request->status == 1) {
                 $old_balance = $player->balance;
-                $transferResult = app(CustomWalletService::class)->transfer($owner, $player, $request->amount,
+                app(CustomWalletService::class)->transfer($agent, $player, $request->amount,
                     TransactionName::TopUp, [
-                        'note' => 'Deposit request approved',
-                        'approved_by' => $user->user_name,
-                        'deposit_id' => $deposit->id,
+                        'old_balance' => $old_balance,
+                        'new_balance' => $old_balance + $request->amount,
                     ]
                 );
-                
-                if (!$transferResult) {
-                    throw new \Exception('Transfer failed');
-                }
                 \App\Models\TransferLog::create([
-                    'from_user_id' => $owner->id,
+                    'from_user_id' => $agent->id,
                     'to_user_id' => $player->id,
                     'amount' => $request->amount,
                     'type' => 'top_up',
@@ -99,11 +92,14 @@ class DepositRequestController extends Controller
                         'player_old_balance' => $old_balance,
                         'player_new_balance' => $old_balance + $request->amount,
                         'refrence_no' => $deposit->refrence_no,
+                        'handled_by' => $user->user_name,
                     ],
                 ]);
             }
 
-            return redirect()->route('admin.deposits.index')->with('success', 'Deposit status updated successfully!');
+            $this->markDepositNotificationsAsRead($deposit);
+
+            return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -112,7 +108,7 @@ class DepositRequestController extends Controller
     public function statusChangeReject(Request $request, DepositRequest $deposit)
     {
         // Check permissions
-        if (! Auth::user()->hasPermission('deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit')) {
             abort(403, 'You do not have permission to process deposits.');
         }
 
@@ -122,11 +118,10 @@ class DepositRequestController extends Controller
 
         try {
             $user = Auth::user();
-            $owner = $user; // No agent system
+            $agent = $user;
 
             // Check if user has permission to handle this deposit
-            // Note: agent_id is actually owner_id
-            if ($deposit->teacher_id !== $owner->id) {
+            if ($deposit->teacher_id !== $agent->id) {
                 return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
             }
 
@@ -138,7 +133,7 @@ class DepositRequestController extends Controller
             ]);
 
             \App\Models\TransferLog::create([
-                'from_user_id' => $owner->id,
+                'from_user_id' => $agent->id,
                 'to_user_id' => $deposit->user_id,
                 'amount' => $deposit->amount,
                 'type' => 'deposit-reject',
@@ -147,10 +142,13 @@ class DepositRequestController extends Controller
                     'deposit_request_id' => $deposit->id,
                     'status' => 'rejected',
                     'refrence_no' => $deposit->refrence_no,
+                    'handled_by' => $user->user_name,
                 ],
             ]);
 
-            return redirect()->route('admin.deposits.index')->with('success', 'Deposit status updated successfully!');
+            $this->markDepositNotificationsAsRead($deposit);
+
+            return redirect()->route('admin.agent.deposit')->with('success', 'Deposit status updated successfully!');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -159,16 +157,15 @@ class DepositRequestController extends Controller
     public function view(DepositRequest $deposit)
     {
         // Check permissions
-        if (! Auth::user()->hasPermission('deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to view deposit requests.');
         }
 
         $user = Auth::user();
-        $owner = $user; // No agent system
+        $agent = $user;
 
         // Check if user has permission to handle this deposit
-        // Note: agent_id is actually owner_id
-        if ($deposit->teacher_id !== $owner->id) {
+        if ($deposit->teacher_id !== $agent->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 
@@ -179,19 +176,35 @@ class DepositRequestController extends Controller
     public function DepositShowLog(DepositRequest $deposit)
     {
         // Check permissions
-        if (! Auth::user()->hasPermission('deposit')) {
+        if (! Auth::user()->hasPermission('process_deposit') && ! Auth::user()->hasPermission('view_deposit_requests')) {
             abort(403, 'You do not have permission to view deposit logs.');
         }
 
         $user = Auth::user();
-        $owner = $user; // No agent system
+        $agent = $user;
 
         // Check if user has permission to handle this deposit
-        // Note: agent_id is actually owner_id
-        if ($deposit->teacher_id !== $owner->id) {
+        if ($deposit->teacher_id !== $agent->id) {
             return redirect()->back()->with('error', 'You do not have permission to handle this deposit request!');
         }
 
         return view('admin.deposit_request.log', compact('deposit'));
+    }
+
+    private function markDepositNotificationsAsRead(DepositRequest $deposit): void
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return;
+        }
+
+        $user->unreadNotifications()
+            ->get()
+            ->filter(function ($notification) use ($deposit) {
+                return ($notification->data['type'] ?? '') === 'deposit'
+                    && (int) ($notification->data['deposit_request_id'] ?? 0) === (int) $deposit->id;
+            })
+            ->each(fn ($notification) => $notification->markAsRead());
     }
 }

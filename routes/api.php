@@ -39,7 +39,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('contact', [ContactController::class, 'get']);
     Route::get('promotion', [PromotionController::class, 'index']);
 
-    // financial api
+    //fanicial api
     Route::get('agentfinicialPaymentType', [BankController::class, 'all']);
     Route::post('depositfinicial', [DepositRequestController::class, 'FinicialDeposit']);
     Route::get('depositlogfinicial', [DepositRequestController::class, 'log']);

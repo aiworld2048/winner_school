@@ -34,3 +34,9 @@ Route::middleware(['auth', 'teacher'])->prefix('teacher')->as('teacher.')->group
     Route::resource('lessons', LessonController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update']);
 });
 
+Route::middleware('auth')->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('unread', [NotificationController::class, 'unread'])->name('unread');
+    Route::post('mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+});
+
+
