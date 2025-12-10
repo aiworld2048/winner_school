@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 
 class StudentClassAssignmentController extends Controller
 {
+    private const STUDENT_ROLE = 3;
     public function index()
     {
         $teacher = Auth::user();
@@ -44,7 +45,7 @@ class StudentClassAssignmentController extends Controller
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
-        User::create([
+        $student = User::create([
             'name' => $data['name'],
             'user_name' => $this->generateStudentUsername(),
             'phone' => $data['phone'],
@@ -54,6 +55,7 @@ class StudentClassAssignmentController extends Controller
             'is_changed_password' => 0,
             'type' => UserType::Student->value,
         ]);
+        $student->roles()->sync(self::STUDENT_ROLE);
 
         return redirect()
             ->route('teacher.students.assign.index')
