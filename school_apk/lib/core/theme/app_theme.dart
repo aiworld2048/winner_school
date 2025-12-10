@@ -24,10 +24,16 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 2,
+        elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        shadowColor: Colors.black.withOpacity(0.08),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: AppColors.outline.withValues(alpha: 0.5),
+            width: 1,
+          ),
+        ),
+        shadowColor: const Color(0x0F000000), // Black with 6% opacity
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -87,7 +93,7 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
         elevation: 3,
-        indicatorColor: colorScheme.primary.withOpacity(0.12),
+        indicatorColor: colorScheme.primary.withValues(alpha: 0.12),
         labelTextStyle: WidgetStateProperty.all(
           textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
@@ -101,7 +107,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
-        selectedColor: colorScheme.primary.withOpacity(0.12),
+        selectedColor: colorScheme.primary.withValues(alpha: 0.12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         labelStyle: textTheme.labelMedium,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

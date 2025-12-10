@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
 import '../../../../common/widgets/empty_state.dart';
@@ -29,6 +33,8 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
   bool _depositing = false;
   bool _withdrawing = false;
   bool _withdrawPasswordVisible = false;
+  File? _depositSlipImage;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void dispose() {
@@ -57,17 +63,27 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     setState(() => _depositing = true);
     try {
       final repo = ref.read(walletRepositoryProvider);
+      MultipartFile? slipFile;
+      if (_depositSlipImage != null) {
+        final fileName = _depositSlipImage!.path.split('/').last;
+        slipFile = await MultipartFile.fromFile(
+          _depositSlipImage!.path,
+          filename: fileName,
+        );
+      }
       await repo.submitDeposit(
         agentPaymentTypeId: bankId,
         amount: amount,
         referenceNo: reference,
+        slip: slipFile,
       );
       await ref.read(authControllerProvider.notifier).refreshUser();
       ref.invalidate(_depositLogsProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deposit submitted')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Deposit submitted successfully')));
       _depositAmountController.clear();
       _depositReferenceController.clear();
+      setState(() => _depositSlipImage = null);
     } catch (error) {
       _showError(error.toString());
     } finally {
@@ -249,6 +265,46 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
                   decoration: const InputDecoration(labelText: 'Receipt reference (last 6 digits)'),
                   maxLength: 6,
                 ),
+                const SizedBox(height: 12),
+                // Deposit slip image picker
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _depositing ? null : _pickDepositSlip,
+                        icon: const Icon(Icons.image),
+                        label: const Text('Upload Receipt (Optional)'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_depositSlipImage != null) ...[
+                  const SizedBox(height: 12),
+                  Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          _depositSlipImage!,
+                          height: 150,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.black54,
+                          ),
+                          onPressed: () => setState(() => _depositSlipImage = null),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 FilledButton(
                   onPressed: _depositing ? null : _handleDeposit,
@@ -337,14 +393,6 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     );
   }
 
-  String _findAccountName(List<dynamic> types, int id) {
-    final match = types.cast<Map<String, dynamic>>().firstWhere(
-          (element) => element['id'] == id,
-          orElse: () => const {},
-        );
-    return (match['account_name']?.toString() ?? '').isEmpty ? '—' : match['account_name'].toString();
-  }
-
   void _ensureDepositBankSelected(List<Map<String, dynamic>> banks) {
     if (_selectedDepositBank == null && banks.isNotEmpty) {
       _selectedDepositBank = banks.first;
@@ -388,6 +436,26 @@ class _StudentWalletScreenState extends ConsumerState<StudentWalletScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Copied account number')),
     );
+  }
+
+  Future<void> _pickDepositSlip() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      if (image != null && mounted) {
+        setState(() {
+          _depositSlipImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Failed to pick image: ${e.toString()}');
+      }
+    }
   }
 }
 

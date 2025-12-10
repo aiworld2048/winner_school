@@ -143,7 +143,7 @@ class _HeroPanel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.14),
+                color: Colors.white.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Row(
@@ -179,9 +179,9 @@ class _HeroPanel extends StatelessWidget {
                   (text) => Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.14),
+                      color: Colors.white.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.25)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
                     ),
                     child: Text(
                       text,
@@ -195,7 +195,7 @@ class _HeroPanel extends StatelessWidget {
           FrostedGlassCard(
             borderRadius: 28,
             padding: const EdgeInsets.all(20),
-            backgroundColor: Colors.white.withOpacity(0.12),
+            backgroundColor: Colors.white.withValues(alpha: 0.12),
             child: Row(
               children: [
                 Expanded(
@@ -241,7 +241,7 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final Color baseColor = isPrimary ? Colors.white : Colors.white.withOpacity(0.18);
+    final Color baseColor = isPrimary ? Colors.white : Colors.white.withValues(alpha: 0.18);
     final Color textColor = active ? AppGradients.hero.colors.first : Colors.white;
 
     return ElevatedButton(
@@ -250,7 +250,7 @@ class _NavButton extends StatelessWidget {
         elevation: 0,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         backgroundColor: onTap == null
-            ? Colors.white.withOpacity(0.08)
+            ? Colors.white.withValues(alpha: 0.08)
             : (active ? Colors.white : baseColor),
         foregroundColor: textColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),

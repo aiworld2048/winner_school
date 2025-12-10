@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserType;
+use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TransferLogRequest;
 use App\Models\User;
+use App\Models\TransferLog;
+use App\Services\CustomWalletService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\AcademicYear;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Exception;
 
 class TeacherController extends Controller
 {
@@ -147,6 +154,244 @@ class TeacherController extends Controller
         } while (User::where('user_name', $candidate)->exists());
 
         return $candidate;
+    }
+
+    // deposit withdraw 
+
+    public function getCashIn(string $teacher): View
+    {
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $agent = User::where('type', UserType::Teacher->value)
+            ->where('teacher_id', $owner->id)
+            ->findOrFail($teacher);
+
+        return view('admin.teachers.cash_in', compact('agent'));
+    }
+
+    public function getCashOut(string $teacher): View
+    {
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $agent = User::where('type', UserType::Teacher->value)
+            ->where('teacher_id', $owner->id)
+            ->findOrFail($teacher);
+
+        return view('admin.teachers.cash_out', compact('agent'));
+    }
+
+    public function makeCashIn(Request $request, $id): RedirectResponse
+    {
+        
+
+        try {
+            $owner = Auth::user();
+            $this->ensureOwner($owner);
+
+            $agent = User::where('type', UserType::Teacher->value)
+                ->where('teacher_id', $owner->id)
+                ->findOrFail($id);
+
+            $request->validate([
+                'amount' => ['required', 'numeric', 'min:1'],
+                'note' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $amount = (int) $request->amount;
+
+            if ($amount > (int) $owner->balance) {
+                throw new \Exception('You do not have enough balance to transfer!');
+            }
+
+            app(CustomWalletService::class)->transfer(
+                $owner,
+                $agent,
+                $amount,
+                TransactionName::CreditTransfer,
+                [
+                    'note' => $request->note,
+                    'description' => $request->note ?? 'Owner to agent top up',
+                ]
+            );
+
+            return redirect()->route('admin.teachers.index')->with('success', 'Money fill request submitted successfully!');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function makeCashOut(TransferLogRequest $request, string $id): RedirectResponse
+    {
+        // if (! Gate::allows('make_transfer')) {
+        //     abort(403);
+        // }
+
+        try {
+            $owner = Auth::user();
+            $this->ensureOwner($owner);
+
+            $agent = User::where('type', UserType::Teacher->value)
+                ->where('teacher_id', $owner->id)
+                ->findOrFail($id);
+
+            $request->validate([
+                'amount' => ['required', 'numeric', 'min:1'],
+                'note' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $amount = (int) $request->amount;
+
+            if ($amount > (int) $agent->balance) {
+                return redirect()->back()->with('error', 'You do not have enough balance to transfer!');
+            }
+
+            app(CustomWalletService::class)->transfer(
+                $agent,
+                $owner,
+                $amount,
+                TransactionName::DebitTransfer,
+                [
+                    'note' => $request->note,
+                    'description' => $request->note ?? 'Teacher cash out to owner',
+                ]
+            );
+
+            return redirect()->back()->with('success', 'Money fill request submitted successfully!');
+        } catch (Exception $e) {
+            session()->flash('error', $e->getMessage());
+
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function getTransferDetail($id)
+    {
+
+        $transfer_detail = TransferLog::where('from_user_id', $id)
+            ->orWhere('to_user_id', $id)
+            ->get();
+
+        return view('admin.teachers.transfer_detail', compact('transfer_detail'));
+    }
+
+    private function generateRandomString()
+    {
+        $randomNumber = mt_rand(10000000, 99999999);
+
+        return 'T-'.$randomNumber;
+    }
+
+    public function banAgent($id): RedirectResponse
+    {
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $user = User::where('type', UserType::Teacher->value)
+            ->where('teacher_id', $owner->id)
+            ->findOrFail($id);
+        $user->update(['status' => $user->status == 1 ? 0 : 1]);
+
+        return redirect()->back()->with(
+            'success',
+            'User '.($user->status == 1 ? 'activate' : 'inactive').' successfully'
+        );
+    }
+
+    public function getChangePassword($id)
+    {
+        // abort_if(
+        //     Gate::denies('owner_access') || ! $this->ifChildOfParent(request()->user()->id, $id),
+        //     Response::HTTP_FORBIDDEN,
+        //     '403 Forbidden |You cannot  Access this page because you do not have permission'
+        // );
+
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $agent = User::where('type', UserType::Teacher->value)
+            ->where('teacher_id', $owner->id)
+            ->findOrFail($id);
+
+        return view('admin.teachers.change_password', compact('agent'));
+    }
+
+    public function makeChangePassword($id, Request $request)
+    {
+        
+
+        $request->validate([
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $agent = User::where('type', UserType::Agent->value)
+            ->where('teacher_id', $owner->id)
+            ->findOrFail($id);
+        $agent->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('admin.agent.index')
+            ->with('successMessage', 'Agent Change Password successfully')
+            ->with('password', $request->password)
+            ->with('username', $agent->user_name);
+    }
+
+    
+    
+    private function generateReferralCode($length = 8)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+
+        return $randomString;
+    }
+
+    // agent profile
+    public function agentProfile($id)
+    {
+        $owner = Auth::user();
+        $this->ensureOwner($owner);
+
+        $agent = User::where('type', UserType::Agent->value)
+            ->where('agent_id', $owner->id)
+            ->findOrFail($id);
+
+        return view('admin.agent.agent_profile', compact('agent'));
+    }
+
+    private function ensureOwner(User $user): void
+    {
+        if ((int) $user->type !== UserType::HeadTeacher->value) {
+            abort(
+                Response::HTTP_FORBIDDEN,
+                'Unauthorized action. || ဤလုပ်ဆောင်ချက်အား သင့်မှာ လုပ်ဆောင်ပိုင်ခွင့်မရှိပါ, ကျေးဇူးပြု၍ သက်ဆိုင်ရာ Head Teacher များထံ ဆက်သွယ်ပါ'
+            );
+        }
+    }
+
+    private function assignAgentRole(User $agent): void
+    {
+        $roleId = Role::where('title', 'Agent')->value('id');
+
+        if ($roleId) {
+            $agent->roles()->sync($roleId);
+        }
+    }
+
+    private function assignAgentPermissions(User $agent): void
+    {
+        $permissionIds = Permission::whereIn('title', self::DEFAULT_AGENT_PERMISSION_TITLES)->pluck('id');
+        $agent->permissions()->sync($permissionIds);
     }
 }
 

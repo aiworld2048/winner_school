@@ -57,7 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           academicYearId: _selectedAcademicYearId,
           referralCode: _referralController.text.trim(),
         );
-    if (!mounted) return;
+    if (!mounted || !dialogContext.mounted) return;
     Navigator.of(dialogContext).pop();
   }
 
@@ -327,9 +327,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         key: ValueKey(authState.error),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.08),
+                          color: AppColors.danger.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.danger.withOpacity(0.4)),
+                          border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
                         ),
                         child: Row(
                           children: [

@@ -52,6 +52,15 @@ Route::group([
     Route::get('teachers/{teacher}/subjects', [TeacherSubjectController::class, 'create'])->name('teachers.subjects.create');
     Route::post('teachers/{teacher}/subjects', [TeacherSubjectController::class, 'store'])->name('teachers.subjects.store');
 
+    // ==================== Teacher Wallet Management ====================
+    Route::middleware(['permission:teacher_wallet_deposit'])->group(function () {
+        Route::get('teacher-wallet/{teacher}/cash-in', [TeacherController::class, 'getCashIn'])->name('teacher.wallet.cash_in');
+        Route::get('teacher-wallet/{teacher}/cash-out', [TeacherController::class, 'getCashOut'])->name('teacher.wallet.cash_out');
+        Route::post('teacher-wallet/{teacher}/cash-in', [TeacherController::class, 'makeCashIn'])->name('teacher.wallet.cash_in.make');
+        Route::post('teacher-wallet/{teacher}/cash-out', [TeacherController::class, 'makeCashOut'])->name('teacher.wallet.cash_out.make');
+        Route::get('teacher-wallet/{teacher}/transfer-detail', [TeacherController::class, 'getTransferDetail'])->name('teacher.wallet.transfer_detail');
+    });
+
    
 
     // ==================== Banner & Promotion Management ====================

@@ -253,7 +253,7 @@ class _NotebookHero extends StatelessWidget {
           Text(
             'Sketch ideas, jot homework, and track progress with a tactile, lined-paper experience built for modern study habits.',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: colors.onPrimary.withOpacity(0.85),
+                  color: colors.onPrimary.withValues(alpha: 0.85),
                 ),
           ),
           const SizedBox(height: 20),
@@ -295,7 +295,7 @@ class _HeroChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -345,7 +345,7 @@ class _NotebookCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               offset: const Offset(0, 8),
               blurRadius: 20,
             ),
@@ -412,8 +412,7 @@ class _NotebookCard extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             visualDensity: VisualDensity.compact,
                           ),
-                        )
-                        .toList(),
+                        ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -441,8 +440,8 @@ class _NotebookLines extends StatelessWidget {
     return IgnorePointer(
       child: CustomPaint(
         painter: _NotebookLinePainter(
-          lineColor: Colors.black.withOpacity(0.05),
-          marginColor: Colors.redAccent.withOpacity(0.2),
+          lineColor: Colors.black.withValues(alpha: 0.05),
+          marginColor: Colors.redAccent.withValues(alpha: 0.2),
         ),
       ),
     );

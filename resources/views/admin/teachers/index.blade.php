@@ -43,20 +43,29 @@
                                         </span>
                                     </td>
                                     <td class="text-right">
-                                        <a href="{{ route('admin.teachers.show', $teacher) }}" class="btn btn-sm btn-outline-secondary">
+                                        <a href="{{ route('admin.teachers.show', $teacher) }}" class="btn btn-sm btn-outline-secondary" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.teachers.edit', $teacher) }}" class="btn btn-sm btn-outline-primary">
+                                        <a href="{{ route('admin.teachers.edit', $teacher) }}" class="btn btn-sm btn-outline-primary" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{{ route('admin.teachers.subjects.create', $teacher) }}" class="btn btn-sm btn-outline-info">
+                                        <a href="{{ route('admin.teachers.subjects.create', $teacher) }}" class="btn btn-sm btn-outline-info" title="Subjects">
                                             <i class="fas fa-book-open"></i>
+                                        </a>
+                                        <a href="{{ route('admin.teacher.wallet.cash_in', $teacher->id) }}" class="btn btn-sm btn-outline-success" title="Deposit (Cash In)">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </a>
+                                        <a href="{{ route('admin.teacher.wallet.cash_out', $teacher->id) }}" class="btn btn-sm btn-outline-danger" title="Withdraw (Cash Out)">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </a>
+                                        <a href="{{ route('admin.teacher.wallet.transfer_detail', $teacher->id) }}" class="btn btn-sm btn-outline-warning" title="Transfer Details">
+                                            <i class="fas fa-history"></i>
                                         </a>
                                         <form action="{{ route('admin.teachers.destroy', $teacher) }}" method="POST" class="d-inline"
                                               onsubmit="return confirm('Are you sure you want to delete this teacher?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
