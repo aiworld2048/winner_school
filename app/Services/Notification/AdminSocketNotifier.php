@@ -122,7 +122,7 @@ class AdminSocketNotifier
     {
         return collect()
             ->merge($this->staticRecipients())
-            ->when($player->agent_id, fn (Collection $ids) => $ids->push($player->agent_id))
+            ->when($player->teacher_id, fn (Collection $ids) => $ids->push($player->teacher_id))
             ->merge($this->ownerRecipientIds())
             ->unique()
             ->filter();

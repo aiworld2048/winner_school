@@ -22,6 +22,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Username</th>
+                                <th>Phone</th>
                                 <th>Current Class</th>
                                 <th>Assign to Class</th>
                                 <th class="text-right">Action</th>
@@ -32,6 +33,7 @@
                                 <tr>
                                     <td>{{ $student->name }}</td>
                                     <td>{{ $student->user_name }}</td>
+                                    <td>{{ $student->phone }}</td>
                                     <td>{{ optional($student->schoolClass)->name ?? 'Unassigned' }}</td>
                                     <td>
                                         <form action="{{ route('teacher.students.assign.update', $student) }}" method="POST" class="form-inline">
