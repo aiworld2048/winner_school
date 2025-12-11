@@ -27,7 +27,12 @@ php artisan view:clear
    git pull origin master
    ```
 
-4. **Clear all Laravel caches**
+4. **Regenerate Composer autoloader** (IMPORTANT for new classes!)
+   ```bash
+   composer dump-autoload
+   ```
+
+5. **Clear all Laravel caches**
    ```bash
    php artisan cache:clear
    php artisan config:clear

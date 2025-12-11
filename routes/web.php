@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Teacher\StudentClassAssignmentController;
 use App\Http\Controllers\Teacher\LessonController;
+use App\Http\Controllers\NotificationController;
 
 // Redirect root route to login
 Route::get('/', function () {
