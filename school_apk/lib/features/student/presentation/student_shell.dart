@@ -5,6 +5,7 @@ import '../../media/presentation/media_hub_screen.dart';
 import '../../shared/widgets/app_navbar.dart';
 import '../../student_notes/presentation/student_notes_screen.dart';
 import 'screens/student_calculator_screen.dart';
+import 'screens/student_exams_screen.dart';
 import 'screens/student_lessons_screen.dart';
 import 'screens/student_profile_screen.dart';
 import 'screens/student_wallet_screen.dart';
@@ -151,6 +152,16 @@ class _StudentDrawer extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const StudentNotesScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.quiz_outlined),
+              title: const Text('Exams'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const StudentExamsScreen()),
                 );
               },
             ),

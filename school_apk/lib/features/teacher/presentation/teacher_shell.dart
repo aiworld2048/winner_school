@@ -6,6 +6,7 @@ import '../../media/presentation/media_hub_screen.dart';
 import '../../shared/widgets/app_navbar.dart';
 import '../providers/teacher_providers.dart';
 import 'screens/teacher_dashboard_screen.dart';
+import 'screens/teacher_exams_screen.dart';
 import 'screens/teacher_lessons_screen.dart';
 import 'screens/teacher_profile_screen.dart';
 import 'screens/teacher_students_screen.dart';
@@ -41,6 +42,15 @@ class _TeacherShellState extends ConsumerState<TeacherShell> {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const MediaHubScreen()),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Exams',
+            icon: const Icon(Icons.quiz_outlined),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TeacherExamsScreen()),
               );
             },
           ),

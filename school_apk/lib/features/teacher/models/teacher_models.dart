@@ -48,15 +48,21 @@ class TeacherStudent {
 }
 
 class TeacherClassInfo {
-  TeacherClassInfo({required this.id, required this.name});
+  TeacherClassInfo({
+    required this.id,
+    required this.name,
+    this.academicYearId,
+  });
 
   final int id;
   final String name;
+  final int? academicYearId;
 
   factory TeacherClassInfo.fromJson(Map<String, dynamic> json) {
     return TeacherClassInfo(
       id: json['id'] as int,
       name: json['name']?.toString() ?? '',
+      academicYearId: json['academic_year_id'] as int?,
     );
   }
 }
