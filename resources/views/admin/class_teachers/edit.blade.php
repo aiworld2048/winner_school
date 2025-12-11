@@ -20,21 +20,50 @@
                     @method('PUT')
 
                     <div class="form-group">
-                        <label for="class_teacher_id">Teacher</label>
-                        <select name="class_teacher_id" id="class_teacher_id" class="form-control @error('class_teacher_id') is-invalid @enderror">
-                            <option value="">Unassigned</option>
+                        <label for="teacher_ids">Teachers <span class="text-muted">(Select multiple)</span></label>
+                        <select name="teacher_ids[]" id="teacher_ids" class="form-control @error('teacher_ids') is-invalid @enderror" multiple size="8">
                             @foreach($teachers as $teacher)
-                                <option value="{{ $teacher->id }}" {{ old('class_teacher_id', $schoolClass->class_teacher_id) == $teacher->id ? 'selected' : '' }}>
+                                <option value="{{ $teacher->id }}" {{ in_array($teacher->id, old('teacher_ids', $assignedTeacherIds ?? [])) ? 'selected' : '' }}>
                                     {{ $teacher->name ?? $teacher->user_name }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('class_teacher_id')
+                        <small class="form-text text-muted">
+                            Hold <kbd>Ctrl</kbd> (Windows) or <kbd>Cmd</kbd> (Mac) to select multiple teachers.
+                        </small>
+                        @error('teacher_ids')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @error('teacher_ids.*')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
+                    <div class="form-group">
+                        <label for="primary_teacher_id">Primary Teacher</label>
+                        <select name="primary_teacher_id" id="primary_teacher_id" class="form-control @error('primary_teacher_id') is-invalid @enderror">
+                            <option value="">No Primary Teacher</option>
+                            @foreach($teachers as $teacher)
+                                <option value="{{ $teacher->id }}" {{ old('primary_teacher_id', $primaryTeacherId ?? $schoolClass->class_teacher_id) == $teacher->id ? 'selected' : '' }}>
+                                    {{ $teacher->name ?? $teacher->user_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">
+                            Select the primary class teacher. This teacher will be set as the main class teacher.
+                        </small>
+                        @error('primary_teacher_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> You can assign multiple teachers to this class. The primary teacher will be set as the main class teacher for backward compatibility.
+                    </div>
+
                     <div class="d-flex justify-content-end">
+                        <a href="{{ route('admin.school-classes.index') }}" class="btn btn-secondary mr-2">Cancel</a>
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>

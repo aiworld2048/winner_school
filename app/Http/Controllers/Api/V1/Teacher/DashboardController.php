@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $data = [
             'students' => $teacher->students()->count(),
             'lessons' => Lesson::where('teacher_id', $teacher->id)->count(),
-            'classes' => $teacher->classesAsTeacher()->count(),
+            'classes' => $teacher->classesAsTeacher()->distinct()->count(),
             'subjects' => $teacher->subjects()->count(),
         ];
 

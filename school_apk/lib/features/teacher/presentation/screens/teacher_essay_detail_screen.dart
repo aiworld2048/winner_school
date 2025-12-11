@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
@@ -7,26 +8,145 @@ import '../../../../core/theme/app_colors.dart';
 import '../../providers/essay_providers.dart';
 import '../widgets/teacher_essay_form_sheet.dart';
 
-class TeacherEssayDetailScreen extends ConsumerWidget {
+class TeacherEssayDetailScreen extends ConsumerStatefulWidget {
   const TeacherEssayDetailScreen({required this.essayId, super.key});
 
   final int essayId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final essayAsync = ref.watch(teacherEssayProvider(essayId));
+  ConsumerState<TeacherEssayDetailScreen> createState() => _TeacherEssayDetailScreenState();
+}
+
+class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScreen> {
+  late final FlutterTts _flutterTts;
+  bool _isSpeaking = false;
+  String? _currentSpeakingText;
+
+  @override
+  void initState() {
+    super.initState();
+    _flutterTts = FlutterTts();
+    _flutterTts.setLanguage('en-US');
+    _flutterTts.setSpeechRate(0.5);
+    _flutterTts.setPitch(1.0);
+    _flutterTts.setVolume(1.0);
+
+    _flutterTts.setCompletionHandler(() {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _currentSpeakingText = null;
+        });
+      }
+    });
+
+    _flutterTts.setErrorHandler((msg) {
+      if (mounted) {
+        setState(() {
+          _isSpeaking = false;
+          _currentSpeakingText = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('TTS Error: $msg')),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
+  }
+
+  String _stripHtmlTags(String htmlString) {
+    // Simple HTML tag removal - for more complex HTML, consider using html package
+    return htmlString
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .trim();
+  }
+
+  Future<void> _speak(String text, String sectionName) async {
+    if (text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No content to read in $sectionName')),
+      );
+      return;
+    }
+
+    // Stop any current speech
+    await _flutterTts.stop();
+
+    // Strip HTML tags if present
+    final cleanText = _stripHtmlTags(text);
+
+    setState(() {
+      _isSpeaking = true;
+      _currentSpeakingText = sectionName;
+    });
+
+    await _flutterTts.speak(cleanText);
+  }
+
+  Future<void> _stopSpeaking() async {
+    await _flutterTts.stop();
+    if (mounted) {
+      setState(() {
+        _isSpeaking = false;
+        _currentSpeakingText = null;
+      });
+    }
+  }
+
+  Widget _buildTtsButton({
+    required String text,
+    required String sectionName,
+    required IconData icon,
+  }) {
+    final isCurrentlySpeaking = _isSpeaking && _currentSpeakingText == sectionName;
+
+    return IconButton(
+      icon: Icon(isCurrentlySpeaking ? Icons.stop : icon),
+      tooltip: isCurrentlySpeaking ? 'Stop reading' : 'Read $sectionName',
+      color: isCurrentlySpeaking ? Colors.red : AppColors.primary,
+      onPressed: () {
+        if (isCurrentlySpeaking) {
+          _stopSpeaking();
+        } else {
+          _speak(text, sectionName);
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final essayAsync = ref.watch(teacherEssayProvider(widget.essayId));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Essay Details'),
         actions: [
+          if (_isSpeaking)
+            IconButton(
+              icon: const Icon(Icons.stop),
+              tooltip: 'Stop reading',
+              color: Colors.red,
+              onPressed: _stopSpeaking,
+            ),
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
-                builder: (context) => TeacherEssayFormSheet(essayId: essayId),
+                builder: (context) => TeacherEssayFormSheet(essayId: widget.essayId),
               );
             },
           ),
@@ -62,11 +182,23 @@ class TeacherEssayDetailScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    essay.title,
-                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                          fontWeight: FontWeight.bold,
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          essay.title,
+                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
+                                      ),
+                                      _buildTtsButton(
+                                        text: essay.title,
+                                        sectionName: 'title',
+                                        icon: Icons.volume_up,
+                                      ),
+                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
@@ -200,16 +332,28 @@ class TeacherEssayDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Description',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Description',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
+                              ),
+                              _buildTtsButton(
+                                text: essay.description!,
+                                sectionName: 'description',
+                                icon: Icons.volume_up,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 12),
                           Text(
                             essay.description!,
                             style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.justify,
                           ),
                         ],
                       ),
@@ -231,16 +375,28 @@ class TeacherEssayDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Instructions',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Instructions',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                 ),
+                              ),
+                              _buildTtsButton(
+                                text: essay.instructions!,
+                                sectionName: 'instructions',
+                                icon: Icons.volume_up,
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 12),
                           Text(
                             essay.instructions!,
                             style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.justify,
                           ),
                         ],
                       ),

@@ -13,7 +13,8 @@ class ClassController extends Controller
         $teacher = $request->user();
 
         $classes = $teacher->classesAsTeacher()
-            ->select('id', 'name', 'grade_level', 'section')
+            ->select('id', 'name', 'grade_level', 'section', 'academic_year_id')
+            ->distinct()
             ->orderBy('grade_level')
             ->orderBy('section')
             ->get()
@@ -23,6 +24,7 @@ class ClassController extends Controller
                     'name' => $class->name ?? $class->full_name,
                     'grade_level' => $class->grade_level,
                     'section' => $class->section,
+                    'academic_year_id' => $class->academic_year_id,
                 ];
             });
 

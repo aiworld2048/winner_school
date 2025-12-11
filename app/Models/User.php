@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -180,10 +181,31 @@ class User extends Authenticatable
 
     /**
      * Get classes where this user is the class teacher.
+     * Returns classes from both legacy (class_teacher_id) and new (class_teacher pivot) relationships.
      */
-    public function classesAsTeacher(): HasMany
+    public function classesAsTeacher()
     {
-        return $this->hasMany(SchoolClass::class, 'class_teacher_id');
+        // Get class IDs from both relationships
+        $legacyClassIds = SchoolClass::where('class_teacher_id', $this->id)->pluck('id');
+        $manyToManyClassIds = DB::table('class_teacher')
+            ->where('teacher_id', $this->id)
+            ->pluck('class_id');
+        
+        // Merge and get unique class IDs
+        $allClassIds = $legacyClassIds->merge($manyToManyClassIds)->unique();
+        
+        // Return a query for these classes
+        return SchoolClass::whereIn('id', $allClassIds);
+    }
+
+    /**
+     * Get all classes where this teacher is assigned (many-to-many relationship only).
+     */
+    public function classesAsTeacherMany(): BelongsToMany
+    {
+        return $this->belongsToMany(SchoolClass::class, 'class_teacher', 'teacher_id', 'class_id')
+            ->withPivot('is_primary')
+            ->withTimestamps();
     }
 
     /**

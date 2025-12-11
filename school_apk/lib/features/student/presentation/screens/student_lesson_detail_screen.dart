@@ -54,6 +54,7 @@ class StudentLessonDetailScreen extends ConsumerWidget {
                 Text(
                   data.description!,
                   style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.justify,
                 ),
                 const SizedBox(height: 12),
               ],
@@ -122,6 +123,15 @@ class _LessonContentHtmlState extends State<_LessonContentHtml> {
         TableHtmlExtension(),
       ],
       style: {
+        'body': Style(
+          textAlign: TextAlign.justify,
+        ),
+        'p': Style(
+          textAlign: TextAlign.justify,
+        ),
+        'div': Style(
+          textAlign: TextAlign.justify,
+        ),
         'table': Style(
           backgroundColor: Colors.white,
           border: const Border.fromBorderSide(BorderSide(color: Colors.black12)),

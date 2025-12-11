@@ -42,10 +42,29 @@ class SchoolClass extends Model
 
     /**
      * Get the class teacher (main teacher for this class).
+     * @deprecated Use teachers() relationship for multiple teachers
      */
     public function classTeacher(): BelongsTo
     {
         return $this->belongsTo(User::class, 'class_teacher_id');
+    }
+
+    /**
+     * Get all teachers assigned to this class.
+     */
+    public function teachers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'class_teacher', 'class_id', 'teacher_id')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the primary teacher for this class.
+     */
+    public function primaryTeacher()
+    {
+        return $this->teachers()->wherePivot('is_primary', true)->first();
     }
 
     /**

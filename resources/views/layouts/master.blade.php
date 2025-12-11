@@ -254,6 +254,27 @@
                                     <p>Lesson Views</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.exams.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.exams.*') && !request()->routeIs('admin.exam-questions.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-clipboard-list"></i>
+                                    <p>Exams</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.exam-questions.exams') }}"
+                                   class="nav-link {{ request()->routeIs('admin.exam-questions.*') || request()->routeIs('admin.exams.questions.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-question-circle"></i>
+                                    <p>Exam Questions</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.essays.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.essays.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-file-alt"></i>
+                                    <p>Essays</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.withdraw') }}"
@@ -290,6 +311,27 @@
                                    class="nav-link {{ request()->routeIs('teacher.lessons.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-book"></i>
                                     <p>My Lessons</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.exams.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.exams.*') && !request()->routeIs('admin.exam-questions.*') && !request()->routeIs('admin.exams.questions.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-clipboard-list"></i>
+                                    <p>My Exams</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.exam-questions.exams') }}"
+                                   class="nav-link {{ request()->routeIs('admin.exam-questions.*') || request()->routeIs('admin.exams.questions.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-question-circle"></i>
+                                    <p>Exam Questions</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.essays.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.essays.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-file-alt"></i>
+                                    <p>My Essays</p>
                                 </a>
                             </li>
                             <li class="nav-item">

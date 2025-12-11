@@ -20,7 +20,7 @@ class SchoolClassController extends Controller
 
     public function index()
     {
-        $classes = SchoolClass::with(['academicYear', 'classTeacher'])
+        $classes = SchoolClass::with(['academicYear', 'classTeacher', 'teachers'])
             ->orderBy('grade_level')
             ->orderBy('section')
             ->paginate(15);

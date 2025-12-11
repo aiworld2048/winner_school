@@ -16,6 +16,9 @@ use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Admin\TeacherSubjectController;
 use App\Http\Controllers\Admin\DictionaryEntryController;
+use App\Http\Controllers\Admin\ExamController;
+use App\Http\Controllers\Admin\EssayController;
+use App\Http\Controllers\Admin\ExamQuestionController;
 use App\Http\Controllers\Admin\LessonViewController;
 use App\Http\Controllers\Admin\TransferLogController;
 use App\Http\Controllers\Admin\WithDrawRequestController;
@@ -47,6 +50,17 @@ Route::group([
     Route::resource('academic-years', AcademicYearController::class)->except(['show']);
     Route::resource('subjects', SubjectController::class)->except(['show']);
     Route::resource('school-classes', SchoolClassController::class)->except(['show']);
+    Route::resource('exams', ExamController::class);
+    Route::get('exam-questions', [ExamQuestionController::class, 'exams'])->name('exam-questions.exams');
+    Route::resource('essays', EssayController::class);
+    Route::prefix('exams/{exam}')->group(function () {
+        Route::get('questions', [ExamQuestionController::class, 'index'])->name('exams.questions.index');
+        Route::get('questions/create', [ExamQuestionController::class, 'create'])->name('exams.questions.create');
+        Route::post('questions', [ExamQuestionController::class, 'store'])->name('exams.questions.store');
+        Route::get('questions/{question}/edit', [ExamQuestionController::class, 'edit'])->name('exams.questions.edit');
+        Route::put('questions/{question}', [ExamQuestionController::class, 'update'])->name('exams.questions.update');
+        Route::delete('questions/{question}', [ExamQuestionController::class, 'destroy'])->name('exams.questions.destroy');
+    });
     Route::get('school-classes/{schoolClass}/teacher', [ClassTeacherController::class, 'edit'])->name('school-classes.teacher.edit');
     Route::put('school-classes/{schoolClass}/teacher', [ClassTeacherController::class, 'update'])->name('school-classes.teacher.update');
     Route::get('teachers/{teacher}/subjects', [TeacherSubjectController::class, 'create'])->name('teachers.subjects.create');

@@ -106,6 +106,7 @@ class DashboardController extends Controller
 
         $classes = $teacher->classesAsTeacher()
             ->with('academicYear')
+            ->distinct()
             ->get();
 
         $subjects = $teacher->subjects()

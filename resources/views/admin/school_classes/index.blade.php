@@ -33,7 +33,24 @@
                                     <td>{{ $class->name }}</td>
                                     <td>{{ $class->grade_level }}{{ $class->section ? ' - '.$class->section : '' }}</td>
                                     <td>{{ optional($class->academicYear)->name ?? 'N/A' }}</td>
-                                    <td>{{ optional($class->classTeacher)->name ?? optional($class->classTeacher)->user_name ?? 'Unassigned' }}</td>
+                                    <td>
+                                        @php
+                                            $class->load('teachers');
+                                            $teachers = $class->teachers;
+                                        @endphp
+                                        @if($teachers->isNotEmpty())
+                                            @foreach($teachers as $teacher)
+                                                <span class="badge badge-info mr-1">
+                                                    {{ $teacher->name ?? $teacher->user_name }}
+                                                    @if($teacher->pivot->is_primary)
+                                                        <small>(Primary)</small>
+                                                    @endif
+                                                </span>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">Unassigned</span>
+                                        @endif
+                                    </td>
                                     <td>{{ $class->capacity }}</td>
                                     <td>
                                         <span class="badge {{ $class->is_active ? 'badge-success' : 'badge-secondary' }}">
