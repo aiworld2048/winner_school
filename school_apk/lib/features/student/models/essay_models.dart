@@ -111,6 +111,19 @@ class Essay {
     }
     return 'No limit';
   }
+
+  String get statusDisplay {
+    switch (status) {
+      case 'published':
+        return 'Published';
+      case 'draft':
+        return 'Draft';
+      case 'archived':
+        return 'Archived';
+      default:
+        return status.toUpperCase();
+    }
+  }
 }
 
 class EssaySubject {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../common/widgets/async_value_widget.dart';
 import '../../../../common/widgets/empty_state.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../models/exam_models.dart';
@@ -83,9 +82,8 @@ class _StudentExamsScreenState extends ConsumerState<StudentExamsScreen> {
                 ref.invalidate(studentExamsProvider(filters));
                 await ref.read(studentExamsProvider(filters).future);
               },
-              child: AsyncValueWidget(
-                value: exams,
-                builder: (examsList) {
+              child: exams.when(
+                data: (examsList) {
                   if (examsList.isEmpty) {
                     return const EmptyState(
                       title: 'No exams found',
@@ -100,6 +98,61 @@ class _StudentExamsScreenState extends ConsumerState<StudentExamsScreen> {
                       final exam = examsList[index] as Exam;
                       return _ExamCard(exam: exam);
                     },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stackTrace) {
+                  // Extract a user-friendly error message
+                  String errorMessage = 'Unable to load exams.';
+                  if (error.toString().contains('TimeoutException') || 
+                      error.toString().contains('timed out')) {
+                    errorMessage = 'Request timed out. Please check your internet connection.';
+                  } else if (error.toString().contains('Failed to fetch')) {
+                    errorMessage = 'Network error. Please check your connection.';
+                  } else if (error.toString().contains('403') || 
+                             error.toString().contains('Forbidden')) {
+                    errorMessage = 'You do not have permission to view exams.';
+                  } else if (error.toString().contains('401') || 
+                             error.toString().contains('Unauthorized')) {
+                    errorMessage = 'Please log in again.';
+                  }
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error loading exams',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            errorMessage,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              ref.invalidate(studentExamsProvider(filters));
+                            },
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),

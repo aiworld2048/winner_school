@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_html_table/flutter_html_table.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../providers/essay_providers.dart';
-import '../widgets/teacher_essay_form_sheet.dart';
 
-class TeacherEssayDetailScreen extends ConsumerStatefulWidget {
-  const TeacherEssayDetailScreen({required this.essayId, super.key});
+class StudentEssayDetailScreen extends ConsumerStatefulWidget {
+  const StudentEssayDetailScreen({required this.essayId, super.key});
 
   final int essayId;
 
   @override
-  ConsumerState<TeacherEssayDetailScreen> createState() => _TeacherEssayDetailScreenState();
+  ConsumerState<StudentEssayDetailScreen> createState() => _StudentEssayDetailScreenState();
 }
 
-class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScreen> {
+class _StudentEssayDetailScreenState extends ConsumerState<StudentEssayDetailScreen> {
   late final FlutterTts _flutterTts;
   bool _isSpeaking = false;
   String? _currentSpeakingText;
@@ -51,7 +52,8 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
             _isSpeaking = false;
             _currentSpeakingText = null;
           });
-          // Don't show error snackbar - silently fail
+          // Don't show error snackbar if TTS is not available
+          // Just silently fail
         }
       });
     } catch (e) {
@@ -71,7 +73,6 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
   }
 
   String _stripHtmlTags(String htmlString) {
-    // Simple HTML tag removal - for more complex HTML, consider using html package
     return htmlString
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .replaceAll('&nbsp;', ' ')
@@ -92,7 +93,6 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
       // Stop any current speech
       await _flutterTts.stop().catchError((_) {});
 
-      // Strip HTML tags if present
       final cleanText = _stripHtmlTags(text);
       
       // Limit text length to prevent TTS issues (max 5000 characters)
@@ -164,7 +164,7 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
 
   @override
   Widget build(BuildContext context) {
-    final essayAsync = ref.watch(teacherEssayProvider(widget.essayId));
+    final essayAsync = ref.watch(studentEssayDetailProvider(widget.essayId));
 
     return Scaffold(
       appBar: AppBar(
@@ -177,16 +177,6 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
               color: Colors.red,
               onPressed: _stopSpeaking,
             ),
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (context) => TeacherEssayFormSheet(essayId: widget.essayId),
-              );
-            },
-          ),
         ],
       ),
       body: AsyncValueWidget(
@@ -214,28 +204,17 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          essay.title,
-                                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                  Text(
+                                    essay.title,
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ),
-                                      _buildTtsButton(
-                                        text: essay.title,
-                                        sectionName: 'title',
-                                        icon: Icons.volume_up,
-                                      ),
-                                    ],
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
@@ -287,6 +266,11 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
                                   ),
                                 ],
                               ),
+                            ),
+                            _buildTtsButton(
+                              text: essay.title,
+                              sectionName: 'title',
+                              icon: Icons.volume_up,
                             ),
                           ],
                         ),
@@ -430,10 +414,20 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            essay.instructions!,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.justify,
+                          Html(
+                            data: essay.instructions!,
+                            extensions: const [TableHtmlExtension()],
+                            style: {
+                              'body': Style(
+                                textAlign: TextAlign.justify,
+                              ),
+                              'p': Style(
+                                textAlign: TextAlign.justify,
+                              ),
+                              'div': Style(
+                                textAlign: TextAlign.justify,
+                              ),
+                            },
                           ),
                         ],
                       ),
@@ -468,16 +462,9 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
                               title: Text(attachment.name),
                               trailing: const Icon(Icons.download),
                               onTap: () {
-                                // TODO: Implement file download functionality
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Download: ${attachment.name}'),
-                                    action: SnackBarAction(
-                                      label: 'Open',
-                                      onPressed: () {
-                                        // Open URL in browser
-                                      },
-                                    ),
                                   ),
                                 );
                               },
@@ -488,56 +475,6 @@ class _TeacherEssayDetailScreenState extends ConsumerState<TeacherEssayDetailScr
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: AppColors.outline.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        if (essay.submissionsCount != null) ...[
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.assignment_outlined, color: AppColors.primary),
-                                const SizedBox(width: 12),
-                                Text(
-                                  '${essay.submissionsCount} Submissions',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        if (essay.viewsCount != null) ...[
-                          if (essay.submissionsCount != null) const SizedBox(width: 24),
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Icon(Icons.visibility_outlined, color: AppColors.primary),
-                                const SizedBox(width: 12),
-                                Text(
-                                  '${essay.viewsCount} Views',
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           );

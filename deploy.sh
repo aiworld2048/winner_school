@@ -5,6 +5,10 @@
 
 echo "🚀 Starting Laravel deployment..."
 
+# Regenerate Composer autoloader (IMPORTANT for new classes!)
+echo "🔄 Regenerating Composer autoloader..."
+composer dump-autoload
+
 # Clear application cache
 echo "📦 Clearing application cache..."
 php artisan cache:clear

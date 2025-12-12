@@ -21,8 +21,16 @@ class ExamController extends Controller
         $student = $this->authStudent();
 
         $query = Exam::with(['subject', 'class', 'academicYear'])
-            ->where('is_published', true)
-            ->where('class_id', $student->class_id);
+            ->where('is_published', true);
+
+        // Only filter by class if student has a class_id
+        // If no class_id, return empty result instead of all exams
+        if ($student->class_id) {
+            $query->where('class_id', $student->class_id);
+        } else {
+            // Student without class should see no exams
+            $query->whereRaw('1 = 0');
+        }
 
         // Filter by subject if provided
         if ($request->filled('subject_id')) {
@@ -40,7 +48,7 @@ class ExamController extends Controller
         }
 
         // Only show upcoming and current exams
-        if ($request->get('upcoming_only', false)) {
+        if ($request->boolean('upcoming_only')) {
             $query->where('exam_date', '>=', now());
         }
 

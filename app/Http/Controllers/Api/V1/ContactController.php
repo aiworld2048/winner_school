@@ -16,11 +16,9 @@ class ContactController extends Controller
 
     public function get()
     {
-        $player = Auth::user();
+        $teacher = Auth::user();
 
-        $admin = $player->parent->parent->agent_id;
-
-        $contact = Contact::where('agent_id', $admin)->get();
+        $contact = Contact::where('teacher_id', $teacher->id)->get();
         // $contact = Contact::get();
 
         return $this->success(ContactResource::collection($contact));

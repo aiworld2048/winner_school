@@ -6,10 +6,12 @@ If new features (like Exams, Essays) are not showing in the sidebar after git pu
 
 ### Quick Fix (Recommended)
 ```bash
+composer dump-autoload
 php artisan cache:clear
 php artisan config:clear
 php artisan route:clear
 php artisan view:clear
+php artisan clear-compiled
 ```
 
 ### Full Deployment Steps
@@ -41,18 +43,18 @@ php artisan view:clear
    php artisan clear-compiled
    ```
 
-5. **Run migrations (if new tables were added)**
+6. **Run migrations (if new tables were added)**
    ```bash
    php artisan migrate --force
    ```
 
-6. **Set proper permissions**
+7. **Set proper permissions**
    ```bash
    chmod -R 755 storage bootstrap/cache
    chown -R www-data:www-data storage bootstrap/cache
    ```
 
-7. **Clear browser cache** (Important!)
+8. **Clear browser cache** (Important!)
    - Press `Ctrl + Shift + Delete` (or `Cmd + Shift + Delete` on Mac)
    - Or hard refresh: `Ctrl + F5` (Windows) / `Cmd + Shift + R` (Mac)
 
@@ -89,9 +91,9 @@ php artisan route:list | grep essays
 
 ### One-Line Command
 
-You can also run all cache clears in one line:
+You can also run all commands in one line:
 ```bash
-php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan clear-compiled
+composer dump-autoload && php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear && php artisan clear-compiled
 ```
 
 ### Using the Deploy Script
