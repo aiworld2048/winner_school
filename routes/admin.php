@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\TeacherSubjectController;
 use App\Http\Controllers\Admin\DictionaryEntryController;
 use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\EssayController;
+use App\Http\Controllers\Admin\VideoLessonController;
 use App\Http\Controllers\Admin\ExamQuestionController;
 use App\Http\Controllers\Admin\LessonViewController;
 use App\Http\Controllers\Admin\TransferLogController;
@@ -53,6 +54,7 @@ Route::group([
     Route::resource('exams', ExamController::class);
     Route::get('exam-questions', [ExamQuestionController::class, 'exams'])->name('exam-questions.exams');
     Route::resource('essays', EssayController::class);
+    Route::resource('video-lessons', VideoLessonController::class);
     Route::prefix('exams/{exam}')->group(function () {
         Route::get('questions', [ExamQuestionController::class, 'index'])->name('exams.questions.index');
         Route::get('questions/create', [ExamQuestionController::class, 'create'])->name('exams.questions.create');

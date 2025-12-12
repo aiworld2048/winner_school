@@ -275,6 +275,13 @@
                                     <p>Essays</p>
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.video-lessons.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.video-lessons.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-video"></i>
+                                    <p>Video Lessons</p>
+                                </a>
+                            </li>
 
                             <li class="nav-item">
                                 <a href="{{ route('admin.agent.withdraw') }}"
@@ -332,6 +339,13 @@
                                    class="nav-link {{ request()->routeIs('admin.essays.*') ? 'active' : '' }}">
                                     <i class="nav-icon fas fa-file-alt"></i>
                                     <p>My Essays</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.video-lessons.index') }}"
+                                   class="nav-link {{ request()->routeIs('admin.video-lessons.*') ? 'active' : '' }}">
+                                    <i class="nav-icon fas fa-video"></i>
+                                    <p>My Video Lessons</p>
                                 </a>
                             </li>
                             <li class="nav-item">

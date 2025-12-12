@@ -64,6 +64,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('exams/{exam}', [\App\Http\Controllers\Api\V1\Teacher\ExamController::class, 'update']);
         Route::delete('exams/{exam}', [\App\Http\Controllers\Api\V1\Teacher\ExamController::class, 'destroy']);
         Route::apiResource('essays', \App\Http\Controllers\Api\V1\Teacher\EssayController::class);
+        Route::apiResource('video-lessons', \App\Http\Controllers\Api\V1\Teacher\VideoLessonController::class);
     });
 
     Route::prefix('student')->group(function () {
@@ -77,6 +78,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('exams/{exam}', [\App\Http\Controllers\Api\V1\Student\ExamController::class, 'show']);
         Route::get('essays', [\App\Http\Controllers\Api\V1\Student\EssayController::class, 'index']);
         Route::get('essays/{essay}', [\App\Http\Controllers\Api\V1\Student\EssayController::class, 'show']);
+        Route::get('video-lessons', [\App\Http\Controllers\Api\V1\Student\VideoLessonController::class, 'index']);
+        Route::get('video-lessons/{videoLesson}', [\App\Http\Controllers\Api\V1\Student\VideoLessonController::class, 'show']);
     });
 });
 
