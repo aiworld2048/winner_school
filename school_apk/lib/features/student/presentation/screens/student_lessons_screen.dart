@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../common/widgets/async_value_widget.dart';
-import '../../../../common/widgets/banner_slider.dart';
 import '../../../../common/widgets/empty_state.dart';
-import '../../../../common/widgets/marquee_text.dart';
-import '../../../media/providers/media_providers.dart';
 import '../../providers/lesson_providers.dart';
 import 'student_lesson_detail_screen.dart';
 
@@ -16,19 +12,11 @@ class StudentLessonsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lessons = ref.watch(lessonsProvider);
-    final banners = ref.watch(mediaBannersProvider);
-    final bannerText = ref.watch(mediaBannerTextsProvider);
 
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(lessonsProvider);
-        ref.invalidate(mediaBannersProvider);
-        ref.invalidate(mediaBannerTextsProvider);
-        await Future.wait([
-          ref.refresh(lessonsProvider.future),
-          ref.refresh(mediaBannersProvider.future),
-          ref.refresh(mediaBannerTextsProvider.future),
-        ]);
+        await ref.read(lessonsProvider.future);
       },
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -39,40 +27,6 @@ class StudentLessonsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AsyncValueWidget(
-                    value: banners,
-                    builder: (items) => BannerSlider(items: items),
-                  ),
-                  const SizedBox(height: 12),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      child: Row(
-                        children: [
-                          Icon(Icons.campaign_outlined,
-                              color: Theme.of(context).colorScheme.primary),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: AsyncValueWidget(
-                              value: bannerText,
-                              builder: (messages) => MarqueeText(messages: messages),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Text(
                     'Latest lessons',
                     style: Theme.of(context).textTheme.titleMedium,

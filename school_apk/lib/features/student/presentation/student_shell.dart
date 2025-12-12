@@ -8,6 +8,7 @@ import 'screens/student_calculator_screen.dart';
 import 'screens/student_essays_screen.dart';
 import 'screens/student_exams_screen.dart';
 import 'screens/student_lessons_screen.dart';
+import 'screens/student_video_lessons_screen.dart';
 import 'screens/student_profile_screen.dart';
 import 'screens/student_wallet_screen.dart';
 
@@ -173,6 +174,16 @@ class _StudentDrawer extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const StudentEssaysScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.video_library_outlined),
+              title: const Text('Video Lessons'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const StudentVideoLessonsScreen()),
                 );
               },
             ),
