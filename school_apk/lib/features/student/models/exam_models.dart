@@ -42,31 +42,76 @@ class Exam {
   final DateTime updatedAt;
 
   factory Exam.fromJson(Map<String, dynamic> json) {
-    return Exam(
-      id: json['id'] as int,
-      title: json['title']?.toString() ?? '',
-      code: json['code']?.toString() ?? '',
-      description: json['description']?.toString(),
-      pdfFileUrl: json['pdf_file_url']?.toString(),
-      subject: ExamSubject.fromJson(json['subject'] as Map<String, dynamic>),
-      classInfo: ExamClass.fromJson(json['class'] as Map<String, dynamic>),
-      academicYear: ExamAcademicYear.fromJson(json['academic_year'] as Map<String, dynamic>),
-      examDate: DateTime.parse(json['exam_date'] as String),
-      durationMinutes: json['duration_minutes'] as int,
-      formattedDuration: json['formatted_duration']?.toString() ?? '',
-      totalMarks: (json['total_marks'] as num).toDouble(),
-      passingMarks: (json['passing_marks'] as num).toDouble(),
-      type: json['type']?.toString() ?? '',
-      isPublished: json['is_published'] as bool? ?? false,
-      questions: json['questions'] != null
-          ? (json['questions'] as List<dynamic>)
-              .map((q) => ExamQuestion.fromJson(q as Map<String, dynamic>))
-              .toList()
-          : null,
-      questionsCount: json['questions_count'] as int?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
+    try {
+      // Parse dates with error handling
+      DateTime? parseDate(dynamic dateValue) {
+        if (dateValue == null) return null;
+        if (dateValue is DateTime) return dateValue;
+        if (dateValue is String) {
+          try {
+            return DateTime.parse(dateValue);
+          } catch (e) {
+            return null;
+          }
+        }
+        return null;
+      }
+
+      final examDate = parseDate(json['exam_date']);
+      if (examDate == null) {
+        throw Exception('Invalid exam_date: ${json['exam_date']}');
+      }
+
+      final createdAt = parseDate(json['created_at']);
+      if (createdAt == null) {
+        throw Exception('Invalid created_at: ${json['created_at']}');
+      }
+
+      final updatedAt = parseDate(json['updated_at']);
+      if (updatedAt == null) {
+        throw Exception('Invalid updated_at: ${json['updated_at']}');
+      }
+
+      // Parse subject, class, and academic_year with null checks
+      if (json['subject'] == null || json['subject'] is! Map<String, dynamic>) {
+        throw Exception('Missing or invalid subject in exam JSON');
+      }
+      if (json['class'] == null || json['class'] is! Map<String, dynamic>) {
+        throw Exception('Missing or invalid class in exam JSON');
+      }
+      if (json['academic_year'] == null || json['academic_year'] is! Map<String, dynamic>) {
+        throw Exception('Missing or invalid academic_year in exam JSON');
+      }
+
+      return Exam(
+        id: json['id'] as int? ?? 0,
+        title: json['title']?.toString() ?? '',
+        code: json['code']?.toString() ?? '',
+        description: json['description']?.toString(),
+        pdfFileUrl: json['pdf_file_url']?.toString(),
+        subject: ExamSubject.fromJson(json['subject'] as Map<String, dynamic>),
+        classInfo: ExamClass.fromJson(json['class'] as Map<String, dynamic>),
+        academicYear: ExamAcademicYear.fromJson(json['academic_year'] as Map<String, dynamic>),
+        examDate: examDate,
+        durationMinutes: (json['duration_minutes'] as num?)?.toInt() ?? 0,
+        formattedDuration: json['formatted_duration']?.toString() ?? '',
+        totalMarks: (json['total_marks'] as num?)?.toDouble() ?? 0.0,
+        passingMarks: (json['passing_marks'] as num?)?.toDouble() ?? 0.0,
+        type: json['type']?.toString() ?? '',
+        isPublished: json['is_published'] as bool? ?? false,
+        questions: json['questions'] != null && json['questions'] is List
+            ? (json['questions'] as List<dynamic>)
+                .whereType<Map<String, dynamic>>()
+                .map((q) => ExamQuestion.fromJson(q))
+                .toList()
+            : null,
+        questionsCount: json['questions_count'] as int?,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
+    } catch (e) {
+      throw Exception('Failed to parse Exam from JSON: $e. JSON: $json');
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -137,16 +182,17 @@ class ExamQuestion {
 
   factory ExamQuestion.fromJson(Map<String, dynamic> json) {
     return ExamQuestion(
-      id: json['id'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       questionText: json['question_text']?.toString() ?? '',
       questionDescription: json['question_description']?.toString(),
-      marks: (json['marks'] as num).toDouble(),
-      order: json['order'] as int,
+      marks: (json['marks'] as num?)?.toDouble() ?? 0.0,
+      order: (json['order'] as num?)?.toInt() ?? 0,
       type: json['type']?.toString() ?? '',
       correctAnswer: json['correct_answer']?.toString(),
-      options: json['options'] != null
+      options: json['options'] != null && json['options'] is List
           ? (json['options'] as List<dynamic>)
-              .map((o) => ExamQuestionOption.fromJson(o as Map<String, dynamic>))
+              .whereType<Map<String, dynamic>>()
+              .map((o) => ExamQuestionOption.fromJson(o))
               .toList()
           : null,
     );
@@ -194,10 +240,10 @@ class ExamQuestionOption {
 
   factory ExamQuestionOption.fromJson(Map<String, dynamic> json) {
     return ExamQuestionOption(
-      id: json['id'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       optionText: json['option_text']?.toString() ?? '',
       isCorrect: json['is_correct'] as bool? ?? false,
-      order: json['order'] as int,
+      order: (json['order'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -224,7 +270,7 @@ class ExamSubject {
 
   factory ExamSubject.fromJson(Map<String, dynamic> json) {
     return ExamSubject(
-      id: json['id'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       name: json['name']?.toString() ?? '',
       code: json['code']?.toString() ?? '',
     );
@@ -252,7 +298,7 @@ class ExamClass {
 
   factory ExamClass.fromJson(Map<String, dynamic> json) {
     return ExamClass(
-      id: json['id'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       name: json['name']?.toString() ?? '',
       code: json['code']?.toString() ?? '',
     );
@@ -278,7 +324,7 @@ class ExamAcademicYear {
 
   factory ExamAcademicYear.fromJson(Map<String, dynamic> json) {
     return ExamAcademicYear(
-      id: json['id'] as int,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       name: json['name']?.toString() ?? '',
     );
   }

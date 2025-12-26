@@ -7,6 +7,7 @@ use App\Enums\TransactionName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TransferLogRequest;
 use App\Models\User;
+use App\Models\SchoolClass;
 use App\Models\TransferLog;
 use App\Services\CustomWalletService;
 use Illuminate\Support\Str;
@@ -30,7 +31,7 @@ class TeacherController extends Controller
     {
         $teachers = User::where('type', UserType::Teacher->value)
             ->withCount(['subjects as subjects_count'])
-            ->withCount(['classesAsTeacher as classes_count'])
+            ->withCount(['classesAsTeacherMany as classes_count'])
             ->latest()
             ->paginate(15);
 

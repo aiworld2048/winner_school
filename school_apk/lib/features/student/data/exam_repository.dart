@@ -46,15 +46,33 @@ class ExamRepository {
 
       // Parse exams with error handling
       final exams = <Exam>[];
+      final errors = <String>[];
+      
       for (final item in data) {
         try {
           if (item is Map<String, dynamic>) {
             exams.add(Exam.fromJson(item));
+          } else {
+            errors.add('Invalid exam item type: ${item.runtimeType}');
           }
         } catch (e) {
-          // Skip invalid exam entries but continue processing others
-          continue;
+          // Log error but continue processing others
+          errors.add('Failed to parse exam: ${e.toString()}');
+          // Only throw if all items fail
+          if (exams.isEmpty && errors.length == data.length) {
+            throw Exception('Failed to parse any exams. Errors: ${errors.join('; ')}');
+          }
         }
+      }
+
+      // If we have some exams, return them even if some failed
+      if (exams.isNotEmpty) {
+        return exams;
+      }
+
+      // If no exams parsed but we had data, throw error
+      if (data.isNotEmpty && errors.isNotEmpty) {
+        throw Exception('Failed to parse exams. Errors: ${errors.join('; ')}');
       }
 
       return exams;
@@ -65,9 +83,26 @@ class ExamRepository {
   }
 
   Future<Exam> fetchExam(int examId) async {
-    final response = await _apiClient.get('student/exams/$examId');
-    final data = response['data'] as Map<String, dynamic>;
-    return Exam.fromJson(data);
+    try {
+      final response = await _apiClient.get('student/exams/$examId');
+      
+      // Handle different response structures
+      Map<String, dynamic> data;
+      if (response is Map<String, dynamic>) {
+        if (response['data'] is Map<String, dynamic>) {
+          data = response['data'] as Map<String, dynamic>;
+        } else {
+          // Direct response
+          data = response;
+        }
+      } else {
+        throw Exception('Unexpected response format: ${response.runtimeType}');
+      }
+      
+      return Exam.fromJson(data);
+    } catch (e) {
+      throw Exception('Failed to fetch exam: ${e.toString()}');
+    }
   }
 }
 

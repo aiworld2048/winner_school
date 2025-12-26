@@ -38,14 +38,13 @@ class LessonDetail extends LessonSummary {
     required super.subjectName,
     required super.className,
     required super.lessonDate,
+    super.pdfFileUrl,
     required this.content,
     required this.durationMinutes,
-    this.pdfFileUrl,
   });
 
   final String? content;
   final int? durationMinutes;
-  final String? pdfFileUrl;
 
   factory LessonDetail.fromJson(Map<String, dynamic> json) {
     return LessonDetail(
