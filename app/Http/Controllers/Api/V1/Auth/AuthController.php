@@ -77,7 +77,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'phone' => $request->phone,
-            'name' => $request->name ?? 'Register User',
+            'name' => $request->name ?? 'Register Student',
             'user_name' => $this->generateRandomString(),
             'password' => Hash::make($inputs['password']),
             'payment_type_id' => $request->payment_type_id,
@@ -88,12 +88,11 @@ class AuthController extends Controller
             'class_id' => $request->class_id,
             'subject_id' => $request->subject_id,
             'academic_year_id' => $request->academic_year_id,
-            'referral_code' => $referralCode,
+            'referral_code' => null,
         ]);
 
         $user->roles()->sync(self::STUDENT_ROLE);
 
-        // $this->cashIn($agent,$user);
 
         return $this->success(new RegisterResource($user), 'User register successfully.');
     }

@@ -28,7 +28,6 @@ return new class extends Migration
             $table->string('account_name')->nullable();
             $table->string('account_number')->nullable();
             $table->string('type');
-            //$table->string('referral_code')->default('winnerschool');
             $table->rememberToken();
             $table->timestamps();
             
