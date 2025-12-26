@@ -25,6 +25,7 @@
                                 <th>Referral Code</th>
                                 <th>Classes</th>
                                 <th>Subjects</th>
+                                <th>Balance</th>
                                 <th>Status</th>
                                 <th class="text-right">Actions</th>
                             </tr>
@@ -39,6 +40,7 @@
                                     <td>{{ $teacher->referral_code ?? '-' }}</td>
                                     <td>{{ $teacher->classes_count }}</td>
                                     <td>{{ $teacher->subjects_count }}</td>
+                                    <td>{{ $teacher->balance ?? '-' }}</td>
                                     <td>
                                         <span class="badge {{ $teacher->status ? 'badge-success' : 'badge-secondary' }}">
                                             {{ $teacher->status ? 'Active' : 'Inactive' }}
