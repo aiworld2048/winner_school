@@ -162,6 +162,26 @@
     </small>
 </div>
 
+<div class="form-group">
+    <label for="pdf_file">PDF File</label>
+    <input type="file" name="pdf_file" id="pdf_file" class="form-control-file @error('pdf_file') is-invalid @enderror" accept=".pdf">
+    @error('pdf_file')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+    @if(optional($exam)->pdf_file)
+        <small class="form-text text-muted">
+            <i class="fas fa-file-pdf text-danger"></i> Current PDF: 
+            <a href="{{ asset('storage/' . $exam->pdf_file) }}" target="_blank">{{ basename($exam->pdf_file) }}</a>
+            <br>
+            <span class="text-muted">Upload a new file to replace the existing PDF.</span>
+        </small>
+    @else
+        <small class="form-text text-muted">
+            <i class="fas fa-info-circle"></i> Upload a PDF file (max 10MB). Optional.
+        </small>
+    @endif
+</div>
+
 <div class="d-flex justify-content-end">
     <a href="{{ route('admin.exams.index') }}" class="btn btn-secondary mr-2">Cancel</a>
     <button type="submit" class="btn btn-primary">{{ $submitLabel ?? 'Save' }}</button>

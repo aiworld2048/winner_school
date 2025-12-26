@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../common/widgets/async_value_widget.dart';
-import '../../../../common/widgets/empty_state.dart';
+import '../../../../common/widgets/content_card.dart';
+import '../../../../common/widgets/error_state.dart';
+import '../../../../common/widgets/filter_chips.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../models/essay_models.dart';
 import '../../providers/essay_providers.dart';
@@ -23,6 +24,18 @@ class _StudentEssaysScreenState extends ConsumerState<StudentEssaysScreen> {
   Widget build(BuildContext context) {
     final essays = ref.watch(studentEssaysProvider);
 
+    // Filter essays based on selected status
+    final filteredEssays = essays.when(
+      data: (essaysList) {
+        if (_selectedStatus != null) {
+          return essaysList.where((e) => e.status == _selectedStatus).toList();
+        }
+        return essaysList;
+      },
+      loading: () => <Essay>[],
+      error: (_, __) => <Essay>[],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Essays'),
@@ -30,42 +43,12 @@ class _StudentEssaysScreenState extends ConsumerState<StudentEssaysScreen> {
       body: Column(
         children: [
           // Filters
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    FilterChip(
-                      label: const Text('All'),
-                      selected: _selectedStatus == null,
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() => _selectedStatus = null);
-                        }
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Published'),
-                      selected: _selectedStatus == 'published',
-                      onSelected: (selected) {
-                        setState(() => _selectedStatus = selected ? 'published' : null);
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Draft'),
-                      selected: _selectedStatus == 'draft',
-                      onSelected: (selected) {
-                        setState(() => _selectedStatus = selected ? 'draft' : null);
-                      },
-                    ),
-                  ],
-                ),
-              ],
+          FilterSection(
+            child: StatusFilterChips(
+              selectedStatus: _selectedStatus,
+              onStatusChanged: (status) {
+                setState(() => _selectedStatus = status);
+              },
             ),
           ),
           // Essays List
@@ -75,29 +58,32 @@ class _StudentEssaysScreenState extends ConsumerState<StudentEssaysScreen> {
                 ref.invalidate(studentEssaysProvider);
                 await ref.read(studentEssaysProvider.future);
               },
-              child: AsyncValueWidget(
-                value: essays,
-                builder: (essaysList) {
-                  // Filter essays based on selected status
-                  final filteredEssays = _selectedStatus != null
-                      ? essaysList.where((e) => e.status == _selectedStatus).toList()
-                      : essaysList;
-
+              child: essays.when(
+                data: (_) {
                   if (filteredEssays.isEmpty) {
-                    return const EmptyState(
-                      title: 'No essays found',
-                      icon: Icons.article_outlined,
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No essays found'),
+                      ),
                     );
                   }
-
                   return ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: filteredEssays.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
-                      final essay = filteredEssays[index];
-                      return _EssayCard(essay: essay);
+                      return _EssayCard(essay: filteredEssays[index]);
                     },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, _) {
+                  final errorMessage = ErrorState.extractErrorMessage(error);
+                  return ErrorState(
+                    title: 'Error loading essays',
+                    message: errorMessage,
+                    onRetry: () => ref.invalidate(studentEssaysProvider),
                   );
                 },
               ),
@@ -119,162 +105,87 @@ class _EssayCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isOverdue = essay.isOverdue;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: isOverdue
-              ? Colors.red.withValues(alpha: 0.3)
-              : essay.status == 'published'
-                  ? AppColors.primary.withValues(alpha: 0.3)
-                  : AppColors.outline.withValues(alpha: 0.5),
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => StudentEssayDetailScreen(essayId: essay.id),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    return ContentCard(
+      borderColor: isOverdue
+          ? Colors.red.withValues(alpha: 0.3)
+          : essay.status == 'published'
+              ? AppColors.primary.withValues(alpha: 0.3)
+              : AppColors.outline.withValues(alpha: 0.5),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => StudentEssayDetailScreen(essayId: essay.id),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          essay.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: essay.status == 'published'
-                                    ? AppColors.primary.withValues(alpha: 0.1)
-                                    : AppColors.outline.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                essay.statusDisplay,
-                                style: TextStyle(
-                                  color: essay.status == 'published'
-                                      ? AppColors.primary
-                                      : AppColors.muted,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            if (isOverdue) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'Overdue',
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.book_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    essay.subject.name,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.class_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    essay.classInfo.name,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Due: ${DateFormat('MMM d, y').format(essay.dueDate)}${essay.dueTime != null ? ' • ${essay.dueTime}' : ''}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.grade_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${essay.totalMarks.toStringAsFixed(0)} marks',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppColors.muted,
-                    ),
-                  ),
-                ],
-              ),
-              if (essay.wordCountMin != null || essay.wordCountMax != null) ...[
-                const SizedBox(height: 8),
-                Row(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.text_fields_outlined, size: 16, color: AppColors.muted),
-                    const SizedBox(width: 6),
                     Text(
-                      essay.wordCountDisplay,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.muted,
+                      essay.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        StatusBadge(
+                          label: essay.statusDisplay,
+                          color: essay.status == 'published'
+                              ? AppColors.primary
+                              : AppColors.muted,
+                        ),
+                        if (isOverdue) ...[
+                          const SizedBox(width: 8),
+                          const StatusBadge(
+                            label: 'Overdue',
+                            color: Colors.red,
+                          ),
+                        ],
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              InfoRow(icon: Icons.book_outlined, text: essay.subject.name),
+              const SizedBox(width: 16),
+              InfoRow(icon: Icons.class_outlined, text: essay.classInfo.name),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              InfoRow(
+                icon: Icons.calendar_today_outlined,
+                text: 'Due: ${DateFormat('MMM d, y').format(essay.dueDate)}${essay.dueTime != null ? ' • ${essay.dueTime}' : ''}',
+              ),
+              const SizedBox(width: 16),
+              InfoRow(
+                icon: Icons.grade_outlined,
+                text: '${essay.totalMarks.toStringAsFixed(0)} marks',
+              ),
+            ],
+          ),
+          if (essay.wordCountMin != null || essay.wordCountMax != null) ...[
+            const SizedBox(height: 8),
+            InfoRow(icon: Icons.text_fields_outlined, text: essay.wordCountDisplay),
+          ],
+        ],
       ),
     );
   }

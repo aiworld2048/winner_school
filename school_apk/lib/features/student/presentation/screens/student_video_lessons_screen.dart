@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../common/widgets/empty_state.dart';
+import '../../../../common/widgets/cached_thumbnail.dart';
+import '../../../../common/widgets/content_card.dart';
+import '../../../../common/widgets/refreshable_list.dart';
+import '../../../../common/widgets/search_bar.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../models/video_lesson_models.dart';
 import '../../providers/video_lesson_providers.dart';
@@ -17,6 +20,35 @@ class StudentVideoLessonsScreen extends ConsumerStatefulWidget {
 
 class _StudentVideoLessonsScreenState extends ConsumerState<StudentVideoLessonsScreen> {
   final Map<String, dynamic> _filters = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase().trim();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<VideoLesson> _filterVideoLessons(List<VideoLesson> lessons) {
+    if (_searchQuery.isEmpty) return lessons;
+
+    return lessons.where((videoLesson) {
+      return videoLesson.title.toLowerCase().contains(_searchQuery) ||
+          (videoLesson.description?.toLowerCase().contains(_searchQuery) ?? false) ||
+          videoLesson.classInfo.name.toLowerCase().contains(_searchQuery) ||
+          videoLesson.subject.name.toLowerCase().contains(_searchQuery);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,83 +60,58 @@ class _StudentVideoLessonsScreenState extends ConsumerState<StudentVideoLessonsS
       ),
       body: Column(
         children: [
+          // Search Bar
+          AppSearchBar(
+            controller: _searchController,
+            hintText: 'Search video lessons by title, description, class, or subject...',
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value.toLowerCase().trim();
+              });
+            },
+            onClear: () {
+              setState(() {
+                _searchQuery = '';
+              });
+            },
+          ),
+          if (_searchQuery.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Found ${videoLessons.maybeWhen(
+                  data: (lessons) => _filterVideoLessons(lessons).length,
+                  orElse: () => 0,
+                )} video lesson${videoLessons.maybeWhen(
+                  data: (lessons) => _filterVideoLessons(lessons).length != 1 ? 's' : '',
+                  orElse: () => 's',
+                )}',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ),
           // Video Lessons List
           Expanded(
-            child: RefreshIndicator(
+            child: RefreshableList<VideoLesson>(
+              asyncValue: videoLessons.when(
+                data: (lessons) => AsyncValue.data(_filterVideoLessons(lessons)),
+                loading: () => const AsyncValue.loading(),
+                error: (error, stack) => AsyncValue.error(error, stack),
+              ),
               onRefresh: () async {
                 ref.invalidate(studentVideoLessonsProvider(_filters));
                 await ref.read(studentVideoLessonsProvider(_filters).future);
               },
-              child: videoLessons.when(
-                data: (videoLessonsList) {
-                  if (videoLessonsList.isEmpty) {
-                    return const EmptyState(
-                      title: 'No video lessons found',
-                      icon: Icons.video_library_outlined,
-                    );
-                  }
-
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: videoLessonsList.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final videoLesson = videoLessonsList[index];
-                      return _VideoLessonCard(videoLesson: videoLesson);
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stackTrace) {
-                  String errorMessage = 'Unable to load video lessons.';
-                  if (error.toString().contains('TimeoutException') || 
-                      error.toString().contains('timed out')) {
-                    errorMessage = 'Request timed out. Please check your internet connection.';
-                  } else if (error.toString().contains('Failed to fetch')) {
-                    errorMessage = 'Network error. Please check your connection.';
-                  } else if (error.toString().contains('402')) {
-                    errorMessage = 'Insufficient balance to view video lessons.';
-                  }
-
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            size: 64,
-                            color: Colors.red,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error loading video lessons',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            errorMessage,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.red[700],
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              ref.invalidate(studentVideoLessonsProvider(_filters));
-                            },
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+              itemBuilder: (context, videoLesson, index) => _VideoLessonCard(videoLesson: videoLesson),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              emptyTitle: _searchQuery.isNotEmpty
+                  ? 'No video lessons found matching "$_searchQuery"'
+                  : 'No video lessons found',
+              emptyIcon: _searchQuery.isNotEmpty ? Icons.search_off : Icons.video_library_outlined,
+              errorTitle: 'Error loading video lessons',
+              onRetry: () => ref.invalidate(studentVideoLessonsProvider(_filters)),
             ),
           ),
         ],
@@ -122,158 +129,114 @@ class _VideoLessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: videoLesson.status == 'published'
-              ? AppColors.primary.withValues(alpha: 0.3)
-              : AppColors.outline.withValues(alpha: 0.5),
-        ),
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => StudentVideoLessonDetailScreen(videoLessonId: videoLesson.id),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    return ContentCard(
+      borderColor: videoLesson.status == 'published'
+          ? AppColors.primary.withValues(alpha: 0.3)
+          : AppColors.outline.withValues(alpha: 0.5),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => StudentVideoLessonDetailScreen(videoLessonId: videoLesson.id),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Thumbnail
-                  if (videoLesson.thumbnailUrl != null && videoLesson.thumbnailUrl!.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        videoLesson.thumbnailUrl!,
-                        width: 80,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 80,
-                            height: 60,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.video_library, color: Colors.grey),
-                          );
-                        },
+              // Thumbnail
+              if (videoLesson.thumbnailUrl != null && videoLesson.thumbnailUrl!.isNotEmpty)
+                CachedThumbnail(
+                  imageUrl: videoLesson.thumbnailUrl!,
+                  width: 80,
+                  height: 60,
+                  borderRadius: BorderRadius.circular(8),
+                )
+              else
+                Container(
+                  width: 80,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.video_library, color: Colors.grey),
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      videoLesson.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                    )
-                  else
-                    Container(
-                      width: 80,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.video_library, color: Colors.grey),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 4),
+                    Row(
                       children: [
-                        Text(
-                          videoLesson.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
+                        Chip(
+                          label: Text(
+                            videoLesson.statusDisplay,
+                            style: const TextStyle(fontSize: 11),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                          padding: EdgeInsets.zero,
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Chip(
-                              label: Text(
-                                videoLesson.statusDisplay,
-                                style: const TextStyle(fontSize: 11),
-                              ),
-                              padding: EdgeInsets.zero,
-                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
+                        if (videoLesson.durationMinutes != null) ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            videoLesson.formattedDuration,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: AppColors.muted,
                             ),
-                            const SizedBox(width: 8),
-                            if (videoLesson.durationMinutes != null)
-                              Text(
-                                videoLesson.formattedDuration,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: AppColors.muted,
-                                ),
-                              ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (videoLesson.description != null && videoLesson.description!.isNotEmpty) ...[
-                Text(
-                  videoLesson.description!,
-                  style: theme.textTheme.bodySmall,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-              ],
-              Row(
-                children: [
-                  Icon(Icons.book_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    videoLesson.subject.name,
-                    style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.class_outlined, size: 16, color: AppColors.muted),
-                  const SizedBox(width: 6),
-                  Text(
-                    videoLesson.classInfo.name,
-                    style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted),
-                  ),
-                ],
-              ),
-              if (videoLesson.lessonDate != null) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.muted),
-                    const SizedBox(width: 6),
-                    Text(
-                      DateFormat('MMM d, y').format(videoLesson.lessonDate!),
-                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted),
-                    ),
                   ],
                 ),
-              ],
-              if (videoLesson.viewsCount != null) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.visibility_outlined, size: 16, color: AppColors.muted),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${videoLesson.viewsCount} views',
-                      style: theme.textTheme.bodySmall?.copyWith(color: AppColors.muted),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 12),
+          if (videoLesson.description != null && videoLesson.description!.isNotEmpty) ...[
+            Text(
+              videoLesson.description!,
+              style: theme.textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+          ],
+          Row(
+            children: [
+              InfoRow(icon: Icons.book_outlined, text: videoLesson.subject.name),
+              const SizedBox(width: 16),
+              InfoRow(icon: Icons.class_outlined, text: videoLesson.classInfo.name),
+            ],
+          ),
+          if (videoLesson.lessonDate != null) ...[
+            const SizedBox(height: 4),
+            InfoRow(
+              icon: Icons.calendar_today_outlined,
+              text: DateFormat('MMM d, y').format(videoLesson.lessonDate!),
+            ),
+          ],
+          if (videoLesson.viewsCount != null) ...[
+            const SizedBox(height: 4),
+            InfoRow(
+              icon: Icons.visibility_outlined,
+              text: '${videoLesson.viewsCount} views',
+            ),
+          ],
+        ],
       ),
     );
   }

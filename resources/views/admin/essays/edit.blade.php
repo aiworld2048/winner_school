@@ -185,6 +185,27 @@
                                     </div>
                                 @endif
                             </div>
+
+                            <div class="form-group">
+                                <label for="pdf_file">PDF File</label>
+                                <input type="file" class="form-control-file @error('pdf_file') is-invalid @enderror" 
+                                       id="pdf_file" name="pdf_file" accept=".pdf">
+                                @error('pdf_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                @if($essay->pdf_file)
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-file-pdf text-danger"></i> Current PDF: 
+                                        <a href="{{ asset('storage/' . $essay->pdf_file) }}" target="_blank">{{ basename($essay->pdf_file) }}</a>
+                                        <br>
+                                        <span class="text-muted">Upload a new file to replace the existing PDF.</span>
+                                    </small>
+                                @else
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i> Upload a PDF file (max 10MB). Optional.
+                                    </small>
+                                @endif
+                            </div>
                         </div>
                     </div>
 

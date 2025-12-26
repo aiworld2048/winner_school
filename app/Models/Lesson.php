@@ -21,6 +21,7 @@ class Lesson extends Model
         'duration_minutes',
         'status',
         'attachments',
+        'pdf_file',
     ];
 
     protected $casts = [

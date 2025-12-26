@@ -136,6 +136,7 @@ class ExamController extends Controller
             'passing_marks' => ['required', 'numeric', 'min:0', 'lte:total_marks'],
             'type' => ['required', 'in:quiz,assignment,midterm,final,project'],
             'is_published' => ['required', 'boolean'],
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
         ]);
 
         // Verify teachers can only create exams for their assigned subjects and classes
@@ -145,6 +146,14 @@ class ExamController extends Controller
             
             abort_unless(in_array($data['subject_id'], $subjectIds), 403, 'You are not assigned to this subject.');
             abort_unless(in_array($data['class_id'], $classIds), 403, 'You are not assigned to this class.');
+        }
+
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/exams/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'exams/pdfs/' . $pdfFilename;
         }
 
         Exam::create([
@@ -161,6 +170,7 @@ class ExamController extends Controller
             'type' => $data['type'],
             'is_published' => $data['is_published'],
             'created_by' => Auth::id(),
+            'pdf_file' => $data['pdf_file'] ?? null,
         ]);
 
         return redirect()
@@ -238,6 +248,7 @@ class ExamController extends Controller
             'passing_marks' => ['required', 'numeric', 'min:0', 'lte:total_marks'],
             'type' => ['required', 'in:quiz,assignment,midterm,final,project'],
             'is_published' => ['required', 'boolean'],
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
         ]);
 
         // Verify teachers can only update exams for their assigned subjects and classes
@@ -247,6 +258,19 @@ class ExamController extends Controller
             
             abort_unless(in_array($data['subject_id'], $subjectIds), 403, 'You are not assigned to this subject.');
             abort_unless(in_array($data['class_id'], $classIds), 403, 'You are not assigned to this class.');
+        }
+
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            // Delete old PDF if exists
+            if ($exam->pdf_file && file_exists(public_path('storage/' . $exam->pdf_file))) {
+                unlink(public_path('storage/' . $exam->pdf_file));
+            }
+            
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/exams/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'exams/pdfs/' . $pdfFilename;
         }
 
         $exam->update($data);

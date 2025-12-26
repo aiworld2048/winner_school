@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('admin.exams.store') }}" method="POST">
+                <form action="{{ route('admin.exams.store') }}" method="POST" enctype="multipart/form-data">
                     @include('admin.exams._form', ['submitLabel' => 'Create', 'exam' => null])
                 </form>
             </div>

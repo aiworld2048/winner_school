@@ -21,6 +21,7 @@ class LessonResource extends JsonResource
             'content' => $this->content,
             'lesson_date' => optional($this->lesson_date)->toDateString(),
             'duration_minutes' => $this->duration_minutes,
+            'pdf_file_url' => $this->pdf_file ? asset('storage/' . $this->pdf_file) : null,
             'class' => [
                 'id' => $this->class_id,
                 'name' => optional($this->class)->name,

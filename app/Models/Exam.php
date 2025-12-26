@@ -25,6 +25,7 @@ class Exam extends Model
         'type',
         'is_published',
         'created_by',
+        'pdf_file',
     ];
 
     protected $casts = [

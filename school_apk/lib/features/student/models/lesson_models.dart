@@ -37,10 +37,12 @@ class LessonDetail extends LessonSummary {
     required super.lessonDate,
     required this.content,
     required this.durationMinutes,
+    this.pdfFileUrl,
   });
 
   final String? content;
   final int? durationMinutes;
+  final String? pdfFileUrl;
 
   factory LessonDetail.fromJson(Map<String, dynamic> json) {
     return LessonDetail(
@@ -52,6 +54,7 @@ class LessonDetail extends LessonSummary {
       lessonDate: json['lesson_date'] != null ? DateTime.tryParse(json['lesson_date'] as String) : null,
       content: json['content'] as String?,
       durationMinutes: json['duration_minutes'] as int?,
+      pdfFileUrl: json['pdf_file_url'] as String?,
     );
   }
 }

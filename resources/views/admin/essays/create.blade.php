@@ -171,6 +171,18 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="form-group">
+                                <label for="pdf_file">PDF File</label>
+                                <input type="file" class="form-control-file @error('pdf_file') is-invalid @enderror" 
+                                       id="pdf_file" name="pdf_file" accept=".pdf">
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Upload a PDF file (max 10MB). Optional.
+                                </small>
+                                @error('pdf_file')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 

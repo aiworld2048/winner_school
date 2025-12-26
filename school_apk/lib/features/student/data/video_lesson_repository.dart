@@ -52,7 +52,8 @@ class VideoLessonRepository {
 
       return videoLessons;
     } catch (e) {
-      throw Exception('Failed to fetch video lessons: ${e.toString()}');
+      // Re-throw with more context - ApiException will have the proper message
+      rethrow;
     }
   }
 
@@ -62,7 +63,8 @@ class VideoLessonRepository {
       final data = response['data'] as Map<String, dynamic>;
       return VideoLesson.fromJson(data);
     } catch (e) {
-      throw Exception('Failed to fetch video lesson: ${e.toString()}');
+      // Re-throw to preserve ApiException with proper message
+      rethrow;
     }
   }
 }

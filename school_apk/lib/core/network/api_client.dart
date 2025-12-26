@@ -97,8 +97,24 @@ class ApiClient {
           'Unable to reach the server. Please check your internet connection or try again shortly.',
         );
       case DioExceptionType.badResponse:
+        // Try to extract error message from Laravel response
+        final responseData = error.response?.data;
+        String? message;
+        
+        if (responseData is Map<String, dynamic>) {
+          // Laravel typically returns errors in 'message' field
+          message = responseData['message']?.toString();
+          
+          // Sometimes Laravel returns errors in 'error' field
+          if (message == null || message.isEmpty) {
+            message = responseData['error']?.toString();
+          }
+        } else if (responseData is String) {
+          message = responseData;
+        }
+        
         return ApiException(
-          error.response?.data?['message']?.toString() ?? 'Server responded with an error.',
+          message ?? 'Server responded with an error.',
           statusCode: error.response?.statusCode,
         );
       default:

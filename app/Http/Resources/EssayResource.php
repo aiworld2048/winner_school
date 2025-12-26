@@ -30,6 +30,7 @@ class EssayResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'instructions' => $this->instructions,
+            'pdf_file_url' => $this->pdf_file ? asset('storage/' . $this->pdf_file) : null,
             'subject' => [
                 'id' => $this->subject->id,
                 'name' => $this->subject->name,

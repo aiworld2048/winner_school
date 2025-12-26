@@ -26,6 +26,7 @@ class Essay extends Model
         'total_marks',
         'status',
         'attachments',
+        'pdf_file',
     ];
 
     protected $casts = [

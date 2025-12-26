@@ -19,6 +19,7 @@ class ExamResource extends JsonResource
             'title' => $this->title,
             'code' => $this->code,
             'description' => $this->description,
+            'pdf_file_url' => $this->pdf_file ? asset('storage/' . $this->pdf_file) : null,
             'subject' => [
                 'id' => $this->subject->id,
                 'name' => $this->subject->name,

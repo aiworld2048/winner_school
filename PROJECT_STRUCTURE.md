@@ -1,298 +1,317 @@
 # Winner School Project Structure
 
 ## Overview
-This project consists of two main components:
-1. **Laravel Backend** - API and Admin Panel (root directory: `winner_school`)
-2. **Flutter Mobile App** - Student/Teacher mobile application (`school_apk/`)
+This is a full-stack educational platform with:
+- **Backend**: Laravel 10 (PHP 8.1+)
+- **Frontend Web**: Laravel Blade Templates (Admin Panel)
+- **Mobile App**: Flutter 3.8.1+ (Dart)
 
 ---
 
-## 📱 Laravel Backend Structure
-
-### Framework & Version
-- **Laravel**: 10.10
-- **PHP**: ^8.1
-- **Authentication**: Laravel Sanctum
-- **Key Packages**: 
-  - Guzzle HTTP
-  - Elephant.io (WebSocket)
+## Laravel Backend Structure
 
 ### Directory Structure
-
 ```
 winner_school/
 ├── app/
 │   ├── Console/              # Artisan commands
-│   ├── Enums/                # Enum classes (UserType, TransactionType, etc.)
+│   ├── Enums/                # PHP Enums (UserType, TransactionStatus, etc.)
 │   ├── Exceptions/           # Exception handlers
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/        # Admin panel controllers (18 files)
-│   │   │   ├── Api/V1/       # API controllers organized by feature
+│   │   │   ├── Admin/        # Admin panel controllers (25 files)
+│   │   │   ├── Api/V1/       # API controllers (23 files)
 │   │   │   │   ├── Auth/
-│   │   │   │   ├── Bank/
-│   │   │   │   ├── Game/
-│   │   │   │   ├── Student/
-│   │   │   │   └── Teacher/
-│   │   │   └── Teacher/      # Teacher web controllers
+│   │   │   │   ├── Student/  # Student API endpoints
+│   │   │   │   └── Teacher/  # Teacher API endpoints
+│   │   │   └── Teacher/      # Web teacher controllers
 │   │   ├── Middleware/       # Custom middleware (14 files)
-│   │   ├── Requests/         # Form request validation (17 files)
-│   │   └── Resources/        # API resources (24 files)
+│   │   ├── Requests/         # Form request validation (18 files)
+│   │   └── Resources/        # API resources (29 files)
 │   ├── Models/               # Eloquent models
 │   │   ├── Admin/            # Admin-related models (10 files)
-│   │   └── [Other models]    # User, Lesson, Subject, etc.
-│   ├── Notifications/        # Notification classes
-│   ├── Providers/            # Service providers
-│   ├── Services/             # Business logic services
-│   │   ├── Notification/     # Socket notification service
-│   │   └── Slot/             # Game slot service
-│   └── Traits/               # Reusable traits
-├── config/                   # Configuration files
+│   │   └── [Core Models]     # User, Lesson, Exam, Essay, VideoLesson, etc.
+│   ├── Notifications/        # Laravel notifications
+│   ├── Providers/           # Service providers
+│   ├── Services/            # Business logic services
+│   └── Traits/              # Reusable traits
 ├── database/
-│   ├── migrations/           # Database migrations (46 files)
-│   └── seeders/              # Database seeders
-├── public/                   # Public assets (images, CSS, JS)
+│   ├── migrations/          # 53 migration files
+│   └── seeders/             # Database seeders (19 files)
 ├── resources/
-│   ├── views/
-│   │   ├── admin/            # Admin panel views (59 files)
-│   │   ├── teacher/          # Teacher panel views (7 files)
-│   │   └── auth/             # Authentication views
-│   ├── css/
-│   └── js/
+│   ├── views/               # Blade templates (95 files)
+│   │   ├── admin/           # Admin panel views
+│   │   └── layouts/         # Layout templates
+│   ├── css/                 # Stylesheets
+│   └── js/                  # JavaScript files
 ├── routes/
-│   ├── api.php               # API routes (for Flutter app)
-│   ├── web.php               # Web routes (admin/teacher panels)
-│   ├── admin.php             # Admin-specific routes
-│   └── channels.php          # Broadcasting channels
-└── storage/                  # Logs, cache, uploads
-
+│   ├── api.php              # API routes
+│   ├── admin.php            # Admin panel routes
+│   ├── web.php              # Web routes
+│   └── channels.php         # Broadcasting channels
+└── public/                  # Public assets
 ```
 
-### Key Features
+### Key Models
+- **User**: Core user model with roles (Admin, Teacher, HeadTeacher, Student)
+- **SchoolClass**: Classes/Grades
+- **Subject**: Academic subjects
+- **AcademicYear**: Academic year management
+- **Lesson**: Text-based lessons
+- **VideoLesson**: Video-based lessons
+- **Exam**: Examinations with questions
+- **Essay**: Essay assignments
+- **StudentNote**: Student personal notes
+- **DictionaryEntry**: Dictionary entries
 
-#### API Routes (`routes/api.php`)
-- **Authentication**: `/login`, `/register`, `/logout`, `/player-change-password`
-- **User**: `/user` (get current user)
-- **Teacher Endpoints** (requires `teacher` middleware):
-  - `/teacher/dashboard`
-  - `/teacher/classes`
-  - `/teacher/subjects`
-  - `/teacher/students` (GET, POST)
-  - `/teacher/lessons` (GET, POST)
-- **Student Endpoints**:
-  - `/student/lessons` (GET, show)
-  - `/student/notes` (CRUD operations)
-- **Public Endpoints**:
-  - `/banner`, `/banner_Text`, `/popup-ads-banner`
-  - `/public/highlights`
-  - `/dictionary`
-- **Financial**:
-  - `/depositfinicial`, `/withdrawfinicial`
-  - Deposit/Withdraw logs
+### API Structure
+**Base URL**: `/api/v1`
 
-#### Web Routes
-- **Admin Panel** (`routes/admin.php`):
-  - Dashboard, Profile Management
-  - Teacher, Class, Subject Management
-  - Banner, Promotion, Contact Management
-  - Dictionary Management
-  - Deposit/Withdraw Request Management
-  - Lesson View Analytics
-- **Teacher Panel** (`routes/web.php`):
-  - Student Class Assignment
-  - Lesson Management
+**Authentication**: Laravel Sanctum (`auth:sanctum` middleware)
 
-#### Models
-- **User Management**: `User`, `UserTree`, `UserPayment`
-- **Academic**: `AcademicYear`, `SchoolClass`, `Subject`, `Lesson`, `LessonView`, `Exam`
-- **Student**: `StudentNote`
-- **Admin**: `Role`, `Permission`, `PermissionUser`, `UserLog`
-- **Financial**: `DepositRequest`, `WithDrawRequest`, `TransactionLog`, `WithdrawLog`
-- **Content**: `Banner`, `BannerAds`, `BannerText`, `Promotion`, `DictionaryEntry`, `Contact`
+**Main API Endpoints**:
+- `/login`, `/register`, `/logout`
+- `/teacher/*` - Teacher endpoints (dashboard, classes, subjects, students, lessons, exams, essays, video-lessons)
+- `/student/*` - Student endpoints (lessons, notes, exams, essays, video-lessons)
+- Public endpoints: `/banner`, `/dictionary`, `/public/highlights`
+
+### Admin Panel Structure
+**Base URL**: `/admin`
+
+**Key Features**:
+- Dashboard
+- Staff Management (Teachers, Classes, Subjects)
+- Academic Management (Academic Years, Classes, Subjects, Dictionary, Lesson Views)
+- Content Management (Exams, Essays, Video Lessons)
+- Financial Management (Banks, Payment Types, Deposit/Withdraw Requests)
+- Marketing (Banners, Promotions, Ads Video)
+- Contact Management
+
+**Middleware**:
+- `auth` - Authentication required
+- `checkBanned` - Check if user is banned
+- `preventPlayerAccess` - Prevent player role access
+- `permission:*` - Permission-based access control
+
+### Database Relationships
+- **User ↔ SchoolClass**: Many-to-Many (via `class_teacher` pivot table)
+- **User ↔ Subject**: Many-to-Many (via `teacher_subject` pivot table)
+- **User (Teacher) ↔ User (Student)**: One-to-Many (via `teacher_id`)
+- **Lesson ↔ User**: BelongsTo (teacher)
+- **VideoLesson ↔ User**: BelongsTo (teacher)
+- **Exam ↔ User**: BelongsTo (teacher)
+- **Essay ↔ User**: BelongsTo (teacher)
 
 ---
 
-## 📱 Flutter App Structure (`school_apk/`)
-
-### Framework & Version
-- **Flutter SDK**: ^3.8.1
-- **State Management**: Flutter Riverpod (^2.5.1)
-- **Key Packages**:
-  - `dio` (^5.7.0) - HTTP client
-  - `shared_preferences` (^2.3.2) - Local storage
-  - `intl` (^0.19.0) - Internationalization
-  - `flutter_html` - HTML rendering
-  - `flutter_tts` - Text-to-speech
-  - `google_fonts` - Custom fonts
+## Flutter Mobile App Structure
 
 ### Directory Structure
-
 ```
 school_apk/
 ├── lib/
-│   ├── main.dart             # App entry point
-│   ├── app.dart              # Root widget with MaterialApp
-│   ├── assets/               # Images, fonts, etc.
-│   ├── common/               # Shared widgets
-│   │   └── widgets/
-│   │       ├── async_value_widget.dart
-│   │       ├── banner_slider.dart
-│   │       ├── empty_state.dart
-│   │       ├── frosted_glass_card.dart
-│   │       └── marquee_text.dart
-│   ├── core/                 # Core functionality
-│   │   ├── constants/
-│   │   │   └── api_constants.dart    # API base URL
-│   │   ├── network/
-│   │   │   ├── api_client.dart       # HTTP client wrapper
-│   │   │   └── api_exception.dart    # Error handling
-│   │   ├── providers/
-│   │   │   └── session_provider.dart  # Session state
-│   │   ├── services/
-│   │   │   └── session_manager.dart  # Session persistence
-│   │   └── theme/            # App theming
-│   │       ├── app_colors.dart
-│   │       ├── app_gradients.dart
-│   │       ├── app_spacing.dart
-│   │       ├── app_theme.dart
-│   │       └── app_typography.dart
-│   └── features/             # Feature modules (Clean Architecture)
-│       ├── auth/
-│       │   ├── data/
-│       │   │   └── auth_repository.dart
-│       │   ├── models/
-│       │   │   └── auth_user.dart
-│       │   ├── presentation/
-│       │   │   ├── auth_gate.dart        # Route guard
-│       │   │   ├── login_screen.dart
-│       │   │   ├── register_screen.dart
-│       │   │   └── widgets/
-│       │   └── providers/
-│       │       └── auth_controller.dart
-│       ├── dictionary/
-│       │   ├── data/
-│       │   ├── models/
-│       │   ├── presentation/
-│       │   └── providers/
-│       ├── marketing/
-│       │   ├── data/
-│       │   ├── models/
-│       │   └── providers/
-│       ├── media/
-│       │   ├── data/
-│       │   ├── models/
-│       │   ├── presentation/
-│       │   └── providers/
-│       ├── shared/
-│       │   └── widgets/
-│       │       └── app_navbar.dart
-│       ├── student/
-│       │   ├── data/
-│       │   │   ├── lesson_repository.dart
-│       │   │   └── wallet_repository.dart
-│       │   ├── models/
-│       │   │   └── lesson_models.dart
-│       │   ├── presentation/
-│       │   │   ├── screens/
-│       │   │   │   ├── student_calculator_screen.dart
-│       │   │   │   ├── student_lesson_detail_screen.dart
-│       │   │   │   ├── student_lessons_screen.dart
-│       │   │   │   ├── student_profile_screen.dart
-│       │   │   │   └── student_wallet_screen.dart
-│       │   │   └── student_shell.dart
-│       │   └── providers/
-│       ├── student_notes/
-│       │   ├── data/
-│       │   ├── models/
-│       │   ├── presentation/
-│       │   └── providers/
-│       └── teacher/
-│           ├── data/
-│           ├── models/
-│           ├── presentation/
-│           │   ├── screens/
-│           │   │   ├── teacher_dashboard_screen.dart
-│           │   │   ├── teacher_lessons_screen.dart
-│           │   │   ├── teacher_profile_screen.dart
-│           │   │   └── teacher_students_screen.dart
-│           │   ├── teacher_shell.dart
-│           │   └── widgets/
-│           └── providers/
-├── android/                  # Android-specific files
-├── ios/                      # iOS-specific files
-├── test/                     # Unit tests
-└── pubspec.yaml              # Dependencies
-
+│   ├── main.dart            # App entry point
+│   ├── app.dart             # Root widget
+│   ├── core/
+│   │   ├── constants/       # API constants, app constants
+│   │   ├── network/         # API client, exceptions
+│   │   ├── providers/       # Core providers (session)
+│   │   ├── services/        # Core services (session manager)
+│   │   └── theme/           # App theme (colors, typography, spacing)
+│   ├── features/
+│   │   ├── auth/            # Authentication feature
+│   │   │   ├── data/        # Auth repository
+│   │   │   ├── models/      # Auth models (AuthUser)
+│   │   │   ├── presentation/ # Login, Register screens
+│   │   │   └── providers/   # Auth providers/controllers
+│   │   ├── student/         # Student feature
+│   │   │   ├── data/        # Repositories (lesson, exam, essay, video_lesson, wallet)
+│   │   │   ├── models/      # Student models
+│   │   │   ├── presentation/ # Student screens (11 screens)
+│   │   │   └── providers/   # Student providers
+│   │   ├── teacher/         # Teacher feature
+│   │   │   ├── data/        # Repositories (essay, exam, teacher)
+│   │   │   ├── models/      # Teacher models
+│   │   │   ├── presentation/ # Teacher screens (8 screens)
+│   │   │   └── providers/   # Teacher providers
+│   │   ├── dictionary/      # Dictionary feature
+│   │   ├── media/           # Media hub feature
+│   │   ├── marketing/       # Marketing/promotions
+│   │   ├── student_notes/   # Student notes feature
+│   │   └── shared/          # Shared widgets
+│   └── common/
+│       └── widgets/         # Reusable widgets
+├── android/                 # Android-specific files
+├── ios/                     # iOS-specific files
+├── pubspec.yaml             # Dependencies
+└── analysis_options.yaml    # Linting rules
 ```
 
 ### Architecture Pattern
-The Flutter app follows **Clean Architecture** with feature-based organization:
-- **Data Layer**: Repositories, API calls
-- **Domain Layer**: Models, business logic
-- **Presentation Layer**: Screens, widgets, providers (Riverpod)
+**Feature-Based Architecture** with **Clean Architecture** principles:
+- **Data Layer**: Repositories, Models
+- **Presentation Layer**: Screens, Widgets
+- **Provider Layer**: Riverpod providers for state management
+
+### State Management
+**Riverpod 2.5.1** - Used throughout the app:
+- `StateNotifierProvider` for complex state
+- `FutureProvider` for async data
+- `StateProvider` for simple state
+- `Provider` for dependencies
 
 ### Key Features
 
 #### Authentication
 - Login/Register screens
-- Session management with `shared_preferences`
-- Token-based authentication (Bearer token)
-- Auth gate for route protection
+- Session management (SharedPreferences)
+- Role-based routing (Student, Teacher, HeadTeacher)
+- AuthGate widget for route protection
 
 #### Student Features
-- Lessons list and detail view
-- Student notes (CRUD)
-- Wallet screen
-- Calculator
-- Profile management
+- **Lessons**: View text-based lessons with HTML content
+- **Video Lessons**: View video lessons (YouTube, Vimeo, direct URLs)
+- **Exams**: List and take exams
+- **Essays**: View and submit essays (with payment)
+- **Notes**: Personal notes management
+- **Wallet**: Balance, deposit, withdraw
+- **Calculator**: Built-in calculator
+- **Profile**: User profile management
 
 #### Teacher Features
-- Dashboard
-- Lessons management
-- Students management
-- Profile management
+- **Dashboard**: Overview statistics
+- **Classes**: Manage assigned classes
+- **Subjects**: View assigned subjects
+- **Students**: Manage students
+- **Lessons**: Create/edit text lessons
+- **Exams**: Create/edit exams with questions
+- **Essays**: Create/edit essay assignments
+- **Video Lessons**: Create/edit video lessons
+- **Profile**: Teacher profile
 
-#### Other Features
-- Dictionary
-- Media hub
-- Marketing highlights
-- Banner slider
+### Key Dependencies
+```yaml
+flutter_riverpod: ^2.5.1      # State management
+dio: ^5.7.0                    # HTTP client
+shared_preferences: ^2.3.2      # Local storage
+flutter_html: ^3.0.0-beta.2    # HTML rendering
+flutter_tts: ^3.8.3            # Text-to-speech
+video_player: ^2.8.2           # Video playback
+chewie: ^1.7.4                 # Video player UI
+url_launcher: ^6.2.5           # External URL launcher
+google_fonts: ^6.2.1           # Custom fonts
+intl: ^0.19.0                  # Internationalization
+image_picker: ^1.0.7           # Image picking
+```
+
+### Navigation Structure
+- **AuthGate** → Routes to Login or appropriate Shell
+- **StudentShell** → Student navigation with drawer
+- **TeacherShell** → Teacher navigation with drawer
 
 ### API Integration
-- **Base URL**: Configurable via `API_ORIGIN` environment variable (default: `https://lion11.site`)
-- **API Client**: Uses Dio with interceptors for:
-  - Automatic token injection
-  - Error handling
-  - Timeout configuration (45 seconds)
-- **Session Management**: Token stored in `shared_preferences`
+- **ApiClient**: Centralized HTTP client using Dio
+- **ApiException**: Custom exception handling
+- **Session Management**: Token-based authentication
+- **Error Handling**: Detailed error messages from API
 
 ---
 
-## 🔗 Integration
+## Key Relationships & Patterns
 
-### API Connection
-- Flutter app connects to Laravel API via `/api/` endpoints
-- Authentication uses Laravel Sanctum tokens
-- All API requests include `Authorization: Bearer {token}` header
+### Laravel Patterns
+1. **Repository Pattern**: Services layer for business logic
+2. **Resource Pattern**: API resources for data transformation
+3. **Form Requests**: Validation in dedicated request classes
+4. **Middleware**: Role and permission-based access control
+5. **Eloquent Relationships**: HasMany, BelongsTo, BelongsToMany
 
-### Data Flow
-1. User logs in via Flutter app → Laravel `/api/login`
-2. Laravel returns token → Stored in Flutter `SessionManager`
-3. Subsequent requests include token → Laravel validates via Sanctum
-4. Admin/Teacher web panels use session-based auth
-
----
-
-## 🗄️ Database
-- **Migrations**: 46 migration files
-- **Seeders**: Multiple seeders for initial data (Users, Classes, Subjects, Permissions, etc.)
+### Flutter Patterns
+1. **Repository Pattern**: Data layer abstraction
+2. **Provider Pattern**: State management with Riverpod
+3. **Feature Modules**: Self-contained feature modules
+4. **Widget Composition**: Reusable widgets
+5. **Error Handling**: Try-catch with user-friendly messages
 
 ---
 
-## 📝 Notes
-- The project uses **Laravel Sanctum** for API authentication
-- Flutter app uses **Riverpod** for state management
-- Both projects follow modern architectural patterns
-- Admin panel uses blade templates (AdminLTE theme)
-- Teacher panel has separate web interface
+## Database Schema Highlights
 
+### Core Tables
+- `users` - All user types (admin, teacher, student)
+- `school_classes` - Classes/grades
+- `subjects` - Academic subjects
+- `academic_years` - Academic year management
+- `lessons` - Text-based lessons
+- `video_lessons` - Video lessons
+- `exams` - Examinations
+- `exam_questions` - Exam questions
+- `exam_question_options` - Multiple choice options
+- `essays` - Essay assignments
+- `student_notes` - Student personal notes
+- `dictionary_entries` - Dictionary entries
+
+### Pivot Tables
+- `class_teacher` - Many-to-many: Classes ↔ Teachers
+- `teacher_subject` - Many-to-many: Teachers ↔ Subjects
+- `class_subject` - Many-to-many: Classes ↔ Subjects
+
+### View Tracking Tables
+- `lesson_views` - Track lesson views
+- `essay_views` - Track essay views
+- `video_lesson_views` - Track video views (with payment)
+
+---
+
+## Deployment
+
+### Laravel Deployment
+1. Run `composer install --no-dev`
+2. Run `php artisan migrate`
+3. Clear caches: `php artisan cache:clear`, `config:clear`, `route:clear`, `view:clear`
+4. Run `composer dump-autoload`
+5. Set proper permissions on `storage/` and `bootstrap/cache/`
+
+### Flutter Deployment
+1. Run `flutter pub get`
+2. Build APK: `flutter build apk --release`
+3. Build iOS: `flutter build ios --release`
+
+---
+
+## Security Features
+
+### Laravel
+- Laravel Sanctum for API authentication
+- CSRF protection
+- Password hashing
+- Role-based access control (RBAC)
+- Permission middleware
+- Input validation via Form Requests
+
+### Flutter
+- Token-based authentication
+- Secure storage (SharedPreferences)
+- API error handling
+- Input validation
+- Role-based UI routing
+
+---
+
+## Recent Features Added
+1. **Multi-Teacher Class Assignment**: Classes can have multiple teachers
+2. **Text-to-Speech**: TTS for essays and lessons
+3. **Video Lessons**: Video lesson management and playback
+4. **Payment Integration**: 100 MMK charge for essays and video lessons
+5. **Improved Error Handling**: Better error messages in Flutter
+6. **Banner Removal**: Removed banner section from Flutter app
+
+---
+
+## Notes
+- The project uses a monorepo structure (Laravel + Flutter in same repo)
+- Flutter app is in `school_apk/` directory
+- Laravel admin panel uses AdminLTE theme
+- Flutter app uses Material Design 3
+- Both projects share the same database
+- API versioning: `/api/v1/`

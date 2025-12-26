@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('teacher.lessons.store') }}" method="POST">
+                <form action="{{ route('teacher.lessons.store') }}" method="POST" enctype="multipart/form-data">
                     @include('teacher.lessons._form', ['classes' => $classes])
                 </form>
             </div>

@@ -134,6 +134,7 @@ class EssayController extends Controller
             'status' => ['required', 'in:draft,published'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:10240'], // 10MB max per file
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
         ]);
 
         // Verify teacher has access to selected subject/class
@@ -153,6 +154,14 @@ class EssayController extends Controller
                 $attachments[] = $path;
             }
             $data['attachments'] = $attachments;
+        }
+
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/essays/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'essays/pdfs/' . $pdfFilename;
         }
 
         $data['teacher_id'] = $user->id;
@@ -235,6 +244,7 @@ class EssayController extends Controller
             'status' => ['required', 'in:draft,published'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:10240'],
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
         ]);
 
         // Verify teacher has access to selected subject/class
@@ -254,6 +264,19 @@ class EssayController extends Controller
                 $attachments[] = $path;
             }
             $data['attachments'] = $attachments;
+        }
+
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            // Delete old PDF if exists
+            if ($essay->pdf_file && file_exists(public_path('storage/' . $essay->pdf_file))) {
+                unlink(public_path('storage/' . $essay->pdf_file));
+            }
+            
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/essays/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'essays/pdfs/' . $pdfFilename;
         }
 
         $essay->update($data);

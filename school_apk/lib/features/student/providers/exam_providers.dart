@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_client.dart';
 import '../data/exam_repository.dart';
+import '../models/exam_models.dart';
 
 final examRepositoryProvider = Provider<ExamRepository>((ref) {
   final api = ref.watch(apiClientProvider);
   return ExamRepository(api);
 });
 
-final studentExamsProvider = FutureProvider.autoDispose.family<List<dynamic>, Map<String, dynamic>>((ref, filters) async {
+final studentExamsProvider = FutureProvider.autoDispose.family<List<Exam>, Map<String, dynamic>>((ref, filters) async {
   try {
     final repo = ref.watch(examRepositoryProvider);
     final exams = await repo.fetchExams(

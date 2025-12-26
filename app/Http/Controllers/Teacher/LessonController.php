@@ -55,6 +55,14 @@ class LessonController extends Controller
             'duration_minutes' => ['nullable', 'integer'],
         ]);
 
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/lessons/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'lessons/pdfs/' . $pdfFilename;
+        }
+
         Lesson::create([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
@@ -65,6 +73,7 @@ class LessonController extends Controller
             'lesson_date' => $data['lesson_date'],
             'duration_minutes' => $data['duration_minutes'] ?? null,
             'status' => 'draft',
+            'pdf_file' => $data['pdf_file'] ?? null,
         ]);
 
         return redirect()
@@ -104,7 +113,21 @@ class LessonController extends Controller
             'subject_id' => ['required', 'in:'.implode(',', $subjectIds)],
             'lesson_date' => ['required', 'date'],
             'duration_minutes' => ['nullable', 'integer'],
+            'pdf_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'], // 10MB max
         ]);
+
+        // Handle PDF file upload
+        if ($request->hasFile('pdf_file')) {
+            // Delete old PDF if exists
+            if ($lesson->pdf_file && file_exists(public_path('storage/' . $lesson->pdf_file))) {
+                unlink(public_path('storage/' . $lesson->pdf_file));
+            }
+            
+            $pdfFile = $request->file('pdf_file');
+            $pdfFilename = time() . '_' . uniqid() . '.' . $pdfFile->getClientOriginalExtension();
+            $pdfFile->move(public_path('storage/lessons/pdfs'), $pdfFilename);
+            $data['pdf_file'] = 'lessons/pdfs/' . $pdfFilename;
+        }
 
         $lesson->update($data);
 

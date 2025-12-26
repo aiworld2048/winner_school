@@ -11,7 +11,7 @@
     <div class="container-fluid">
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('admin.exams.update', $exam) }}" method="POST">
+                <form action="{{ route('admin.exams.update', $exam) }}" method="POST" enctype="multipart/form-data">
                     @method('PUT')
                     @include('admin.exams._form', ['submitLabel' => 'Update'])
                 </form>
