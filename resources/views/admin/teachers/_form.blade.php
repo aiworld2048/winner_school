@@ -22,6 +22,16 @@
 <div class="row">
     <div class="col-md-6">
         <div class="form-group">
+            <label>Referral Code</label>
+            <input type="text" class="form-control" value="{{ optional($referralCode)->referral_code ?? 'Auto generated' }}" disabled>
+            <small class="form-text text-muted">This code will be used by students during registration.</small>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
             <label for="phone">Phone</label>
             <input type="text" name="phone" id="phone" class="form-control @error('phone') is-invalid @enderror"
                    value="{{ old('phone', optional($teacher)->phone) }}">

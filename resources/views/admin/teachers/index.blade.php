@@ -22,6 +22,7 @@
                                 <th>User Name</th>
                                 <th>Name</th>
                                 <th>Phone</th>
+                                <th>Referral Code</th>
                                 <th>Classes</th>
                                 <th>Subjects</th>
                                 <th>Status</th>
@@ -35,6 +36,7 @@
                                     <td>{{ $teacher->user_name }}</td>
                                     <td>{{ $teacher->name }}</td>
                                     <td>{{ $teacher->phone ?? '-' }}</td>
+                                    <td>{{ $teacher->referral_code ?? '-' }}</td>
                                     <td>{{ $teacher->classes_count }}</td>
                                     <td>{{ $teacher->subjects_count }}</td>
                                     <td>

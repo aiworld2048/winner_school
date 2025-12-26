@@ -40,7 +40,8 @@ class TeacherController extends Controller
 
     public function create()
     {
-        return view('admin.teachers.create');
+        $referralCode = $this->generateUniqueReferralCode();
+        return view('admin.teachers.create', compact('referralCode'));
     }
 
     public function store(Request $request)
@@ -54,6 +55,7 @@ class TeacherController extends Controller
         ]);
 
         $userName = $this->generateTeacherUsername();
+        $referralCode = $this->generateUniqueReferralCode();
 
         $user = User::create([
             'name' => $data['name'],
@@ -65,6 +67,7 @@ class TeacherController extends Controller
             'is_changed_password' => 0,
             'teacher_id' => Auth::id(),
             'type' => UserType::Teacher->value,
+            'referral_code' => $referralCode,
         ]);
 
         // Assign Teacher role to the user
@@ -370,6 +373,15 @@ class TeacherController extends Controller
         }
 
         return $randomString;
+    }
+
+    private function generateUniqueReferralCode($length = 8): string
+    {
+        do {
+            $candidate = $this->generateReferralCode($length);
+        } while (User::where('referral_code', $candidate)->exists());
+
+        return $candidate;
     }
 
     // agent profile
