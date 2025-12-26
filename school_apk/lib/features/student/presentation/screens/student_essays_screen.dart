@@ -152,6 +152,38 @@ class _EssayCard extends StatelessWidget {
                             color: Colors.red,
                           ),
                         ],
+                        if (essay.pdfFileUrl != null && essay.pdfFileUrl!.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.picture_as_pdf,
+                                  size: 14,
+                                  color: Colors.red[800],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'PDF',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.red[800],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],

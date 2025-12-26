@@ -6,6 +6,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html_table/flutter_html_table.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
+import '../../../../common/widgets/pdf_viewer.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../providers/essay_providers.dart';
 
@@ -432,6 +433,13 @@ class _StudentEssayDetailScreenState extends ConsumerState<StudentEssayDetailScr
                         ],
                       ),
                     ),
+                  ),
+                ],
+                if (essay.pdfFileUrl != null && essay.pdfFileUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  PdfViewerWidget(
+                    pdfUrl: essay.pdfFileUrl!,
+                    title: 'PDF Document',
                   ),
                 ],
                 if (essay.attachments != null && essay.attachments!.isNotEmpty) ...[

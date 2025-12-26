@@ -68,9 +68,46 @@ class StudentLessonsScreen extends ConsumerWidget {
                     return Card(
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(16),
-                        title: Text(
-                          lesson.title,
-                          style: Theme.of(context).textTheme.titleMedium,
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                lesson.title,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            if (lesson.pdfFileUrl != null && lesson.pdfFileUrl!.isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.picture_as_pdf,
+                                      size: 12,
+                                      color: Colors.red[800],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'PDF',
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: Colors.red[800],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

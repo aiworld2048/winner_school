@@ -6,6 +6,7 @@ class LessonSummary {
     required this.subjectName,
     required this.className,
     required this.lessonDate,
+    this.pdfFileUrl,
   });
 
   final int id;
@@ -14,6 +15,7 @@ class LessonSummary {
   final String? subjectName;
   final String? className;
   final DateTime? lessonDate;
+  final String? pdfFileUrl;
 
   factory LessonSummary.fromJson(Map<String, dynamic> json) {
     return LessonSummary(
@@ -23,6 +25,7 @@ class LessonSummary {
       subjectName: json['subject']?['name'] as String? ?? json['subject_name'] as String?,
       className: json['class']?['name'] as String? ?? json['class_name'] as String?,
       lessonDate: json['lesson_date'] != null ? DateTime.tryParse(json['lesson_date'] as String) : null,
+      pdfFileUrl: json['pdf_file_url'] as String?,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
+import '../../../../common/widgets/pdf_viewer.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../models/exam_models.dart';
 import '../../providers/exam_providers.dart';
@@ -192,6 +193,13 @@ class StudentExamDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                  ),
+                ],
+                if (examData.pdfFileUrl != null && examData.pdfFileUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  PdfViewerWidget(
+                    pdfUrl: examData.pdfFileUrl!,
+                    title: 'PDF Document',
                   ),
                 ],
                 if (examData.hasQuestions && examData.isUpcoming) ...[

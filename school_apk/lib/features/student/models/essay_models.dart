@@ -4,6 +4,7 @@ class Essay {
     required this.title,
     this.description,
     this.instructions,
+    this.pdfFileUrl,
     required this.subject,
     required this.classInfo,
     required this.academicYear,
@@ -27,6 +28,7 @@ class Essay {
   final String title;
   final String? description;
   final String? instructions;
+  final String? pdfFileUrl;
   final EssaySubject subject;
   final EssayClass classInfo;
   final EssayAcademicYear academicYear;
@@ -51,6 +53,7 @@ class Essay {
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
       instructions: json['instructions']?.toString(),
+      pdfFileUrl: json['pdf_file_url']?.toString(),
       subject: EssaySubject.fromJson(json['subject'] as Map<String, dynamic>),
       classInfo: EssayClass.fromJson(json['class'] as Map<String, dynamic>),
       academicYear: EssayAcademicYear.fromJson(json['academic_year'] as Map<String, dynamic>),

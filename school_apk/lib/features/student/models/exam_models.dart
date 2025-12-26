@@ -4,6 +4,7 @@ class Exam {
     required this.title,
     required this.code,
     this.description,
+    this.pdfFileUrl,
     required this.subject,
     required this.classInfo,
     required this.academicYear,
@@ -24,6 +25,7 @@ class Exam {
   final String title;
   final String code;
   final String? description;
+  final String? pdfFileUrl;
   final ExamSubject subject;
   final ExamClass classInfo;
   final ExamAcademicYear academicYear;
@@ -45,6 +47,7 @@ class Exam {
       title: json['title']?.toString() ?? '',
       code: json['code']?.toString() ?? '',
       description: json['description']?.toString(),
+      pdfFileUrl: json['pdf_file_url']?.toString(),
       subject: ExamSubject.fromJson(json['subject'] as Map<String, dynamic>),
       classInfo: ExamClass.fromJson(json['class'] as Map<String, dynamic>),
       academicYear: ExamAcademicYear.fromJson(json['academic_year'] as Map<String, dynamic>),

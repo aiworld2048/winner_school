@@ -90,6 +90,37 @@
                         </table>
                     </div>
                 </div>
+
+                @if($exam->pdf_file)
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-file-pdf text-danger"></i> PDF Document
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <a href="{{ asset('storage/' . $exam->pdf_file) }}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </a>
+                                <a href="{{ asset('storage/' . $exam->pdf_file) }}" target="_blank" class="btn btn-secondary">
+                                    <i class="fas fa-external-link-alt"></i> Open in New Tab
+                                </a>
+                            </div>
+                            <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                                <iframe 
+                                    src="{{ asset('storage/' . $exam->pdf_file) }}" 
+                                    width="100%" 
+                                    height="600px"
+                                    style="border: none;">
+                                    <p>Your browser does not support PDFs. 
+                                        <a href="{{ asset('storage/' . $exam->pdf_file) }}" target="_blank">Download the PDF</a>.
+                                    </p>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
             <div class="col-md-4">
                 <div class="card">

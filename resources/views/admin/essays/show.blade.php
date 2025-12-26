@@ -53,6 +53,33 @@
                                 </ul>
                             </div>
                         @endif
+
+                        @if($essay->pdf_file)
+                            <div class="mb-3">
+                                <h5>
+                                    <i class="fas fa-file-pdf text-danger"></i> PDF Document
+                                </h5>
+                                <div class="mb-2">
+                                    <a href="{{ asset('storage/' . $essay->pdf_file) }}" target="_blank" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-download"></i> Download PDF
+                                    </a>
+                                    <a href="{{ asset('storage/' . $essay->pdf_file) }}" target="_blank" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-external-link-alt"></i> Open in New Tab
+                                    </a>
+                                </div>
+                                <div style="border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                                    <iframe 
+                                        src="{{ asset('storage/' . $essay->pdf_file) }}" 
+                                        width="100%" 
+                                        height="600px"
+                                        style="border: none;">
+                                        <p>Your browser does not support PDFs. 
+                                            <a href="{{ asset('storage/' . $essay->pdf_file) }}" target="_blank">Download the PDF</a>.
+                                        </p>
+                                    </iframe>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

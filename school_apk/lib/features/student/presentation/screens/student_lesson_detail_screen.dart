@@ -5,6 +5,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_html_table/flutter_html_table.dart';
 
 import '../../../../common/widgets/async_value_widget.dart';
+import '../../../../common/widgets/pdf_viewer.dart';
 import '../../providers/lesson_providers.dart';
 
 class StudentLessonDetailScreen extends ConsumerWidget {
@@ -73,6 +74,13 @@ class StudentLessonDetailScreen extends ConsumerWidget {
                     child: Text('No detailed content provided.'),
                   ),
                 ),
+              if (data.pdfFileUrl != null && data.pdfFileUrl!.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                PdfViewerWidget(
+                  pdfUrl: data.pdfFileUrl!,
+                  title: 'PDF Document',
+                ),
+              ],
             ],
           );
         },
