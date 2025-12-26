@@ -128,13 +128,28 @@ class TeacherController extends Controller
     {
         abort_unless((int) $teacher->type === UserType::Teacher->value, 404);
 
+        // Load subjects with pivot and creator
         $teacher->load([
-            'classesAsTeacher.academicYear',
             'subjects' => function ($query) {
                 $query->withPivot('academic_year_id');
             },
             'subjects.creator',
         ]);
+
+        // Get classes from both legacy and many-to-many relationships
+        $legacyClasses = SchoolClass::where('class_teacher_id', $teacher->id)
+            ->with('academicYear')
+            ->get();
+        
+        $manyToManyClasses = $teacher->classesAsTeacherMany()
+            ->with('academicYear')
+            ->get();
+        
+        // Merge and deduplicate classes
+        $allClasses = $legacyClasses->merge($manyToManyClasses)->unique('id');
+        
+        // Add classes to teacher model as a dynamic attribute for the view
+        $teacher->setRelation('classesAsTeacher', $allClasses);
 
         $academicYears = AcademicYear::whereIn(
             'id',
