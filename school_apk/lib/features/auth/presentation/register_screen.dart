@@ -48,17 +48,26 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit(BuildContext dialogContext) async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authControllerProvider.notifier).register(
-          _nameController.text.trim(),
-          _phoneController.text.trim(),
-          _passwordController.text,
-          classId: _selectedClassId,
-          subjectId: _selectedSubjectId,
-          academicYearId: _selectedAcademicYearId,
-          referralCode: _referralController.text.trim(),
-        );
-    if (!mounted || !dialogContext.mounted) return;
-    Navigator.of(dialogContext).pop();
+    
+    try {
+      await ref.read(authControllerProvider.notifier).register(
+            _nameController.text.trim(),
+            _phoneController.text.trim(),
+            _passwordController.text,
+            classId: _selectedClassId,
+            subjectId: _selectedSubjectId,
+            academicYearId: _selectedAcademicYearId,
+            referralCode: _referralController.text.trim(),
+          );
+      
+      // Only close dialog on success - AuthGate will automatically navigate to StudentShell
+      if (mounted && dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+    } catch (e) {
+      // Error is already handled by the auth controller state
+      // Dialog stays open to show error message
+    }
   }
 
   @override

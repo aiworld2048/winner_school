@@ -93,8 +93,18 @@ class AuthController extends Controller
 
         $user->roles()->sync(self::STUDENT_ROLE);
 
+        // Load roles for the resource
+        $user->load('roles');
 
-        return $this->success(new RegisterResource($user), 'User register successfully.');
+        // Create user log for registration
+        UserLog::create([
+            'ip_address' => $request->ip(),
+            'user_id' => $user->id,
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        // Return user with token for auto-login
+        return $this->success(new RegisterResource($user), 'User registered successfully. You are now logged in.');
     }
 
     public function logout()

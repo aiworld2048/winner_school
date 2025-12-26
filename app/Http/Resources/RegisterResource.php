@@ -22,6 +22,7 @@ class RegisterResource extends JsonResource
             'email' => $this->email,
             'balance' => $this->balance,
             'status' => $this->status,
+            'type' => (int) $this->type,
             'account_name' => $this->account_name,
             'account_number' => $this->account_number,
             'payment_type_id' => $this->payment_type_id,
